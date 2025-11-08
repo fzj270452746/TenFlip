@@ -447,43 +447,238 @@ extension SovereignBattlefieldController: UICollectionViewDataSource, UICollecti
 // MARK: - Collection View Cell
 class MahjongCellArchetype: UICollectionViewCell {
     
+    private let containerView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.layer.cornerRadius = 10
+        view.clipsToBounds = false
+        return view
+    }()
+    
     private let imageView: UIImageView = {
         let iv = UIImageView()
         iv.contentMode = .scaleAspectFit
         iv.translatesAutoresizingMaskIntoConstraints = false
-        iv.layer.cornerRadius = 6
+        iv.layer.cornerRadius = 8
         iv.clipsToBounds = true
         return iv
     }()
     
+    // Gradient border layer (used as mask for border effect)
+    private let gradientBorderLayer: CAGradientLayer = {
+        let layer = CAGradientLayer()
+        layer.colors = [
+            ArcaneConfiguration.ColorPalette.neonCyan.cgColor,
+            ArcaneConfiguration.ColorPalette.neonPurple.cgColor,
+            ArcaneConfiguration.ColorPalette.neonPink.cgColor
+        ]
+        layer.startPoint = CGPoint(x: 0, y: 0)
+        layer.endPoint = CGPoint(x: 1, y: 1)
+        layer.cornerRadius = 10
+        return layer
+    }()
+    
+    // Border view for gradient effect
+    private let borderView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = .clear
+        view.layer.cornerRadius = 10
+        view.isUserInteractionEnabled = false  // 不拦截触摸事件
+        return view
+    }()
+    
+    // Inner border layer (for revealed cards)
+    private let innerBorderLayer: CALayer = {
+        let layer = CALayer()
+        layer.borderWidth = 2
+        layer.cornerRadius = 8
+        return layer
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
-        contentView.addSubview(imageView)
-        contentView.backgroundColor = .clear
-        
-        NSLayoutConstraint.activate([
-            imageView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            imageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            imageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            imageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
-        ])
+        setupCell()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+    private func setupCell() {
+        contentView.backgroundColor = .clear
+        
+        // Add container view and border view
+        contentView.addSubview(borderView)
+        contentView.addSubview(containerView)
+        containerView.addSubview(imageView)
+        
+        // Add gradient border layer to border view
+        borderView.layer.insertSublayer(gradientBorderLayer, at: 0)
+        imageView.layer.addSublayer(innerBorderLayer)
+        
+        NSLayoutConstraint.activate([
+            // Border view (slightly larger for border effect)
+            borderView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            borderView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            borderView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            borderView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            
+            // Container view (inner content)
+            containerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 2),
+            containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 2),
+            containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -2),
+            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -2),
+            
+            // Image view
+            imageView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 2),
+            imageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 2),
+            imageView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -2),
+            imageView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -2)
+        ])
+        
+        // Initial styling
+        updateBorderStyle(isRevealed: false, isEliminated: false)
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        updateLayersFrame()
+    }
+    
+    private func updateLayersFrame() {
+        gradientBorderLayer.frame = borderView.bounds
+        innerBorderLayer.frame = imageView.bounds
+        
+        // Create gradient border effect using mask
+        let borderWidth: CGFloat = 3
+        let maskLayer = CAShapeLayer()
+        let path = UIBezierPath(roundedRect: borderView.bounds, cornerRadius: 10)
+        let innerPath = UIBezierPath(roundedRect: borderView.bounds.insetBy(dx: borderWidth, dy: borderWidth), cornerRadius: 8)
+        path.append(innerPath.reversing())
+        maskLayer.path = path.cgPath
+        maskLayer.fillRule = .evenOdd
+        gradientBorderLayer.mask = maskLayer
+    }
+    
+    private func updateBorderStyle(isRevealed: Bool, isEliminated: Bool) {
+        if isEliminated {
+            // Eliminated cards - dimmed border
+            gradientBorderLayer.opacity = 0.2
+            borderView.alpha = 0.2
+            innerBorderLayer.borderColor = UIColor.gray.withAlphaComponent(0.3).cgColor
+            innerBorderLayer.borderWidth = 1
+            containerView.layer.shadowOpacity = 0
+            borderView.layer.shadowOpacity = 0
+        } else if isRevealed {
+            // Revealed cards - bright neon border with glow
+            gradientBorderLayer.opacity = 1.0
+            borderView.alpha = 1.0
+            
+            // Inner border with matching color
+            innerBorderLayer.borderColor = ArcaneConfiguration.ColorPalette.neonCyan.cgColor
+            innerBorderLayer.borderWidth = 2
+            
+            // Neon glow shadow on border view
+            borderView.layer.shadowColor = ArcaneConfiguration.ColorPalette.neonCyan.cgColor
+            borderView.layer.shadowRadius = 8
+            borderView.layer.shadowOpacity = 0.8
+            borderView.layer.shadowOffset = CGSize(width: 0, height: 0)
+            
+            // Container shadow
+            containerView.layer.shadowColor = ArcaneConfiguration.ColorPalette.neonPurple.cgColor
+            containerView.layer.shadowRadius = 4
+            containerView.layer.shadowOpacity = 0.6
+            containerView.layer.shadowOffset = CGSize(width: 0, height: 0)
+            
+            // Add pulsing animation
+            addPulsingAnimation()
+        } else {
+            // Hidden cards - subtle border
+            gradientBorderLayer.opacity = 0.6
+            borderView.alpha = 0.6
+            innerBorderLayer.borderColor = UIColor.white.withAlphaComponent(0.3).cgColor
+            innerBorderLayer.borderWidth = 1
+            borderView.layer.shadowColor = UIColor.white.cgColor
+            borderView.layer.shadowRadius = 4
+            borderView.layer.shadowOpacity = 0.4
+            borderView.layer.shadowOffset = CGSize(width: 0, height: 0)
+            containerView.layer.shadowOpacity = 0
+            
+            // Remove pulsing animation
+            removePulsingAnimation()
+        }
+        
+        // Update border mask
+        DispatchQueue.main.async { [weak self] in
+            self?.updateLayersFrame()
+        }
+    }
+    
+    private func addPulsingAnimation() {
+        // Remove existing animation
+        removePulsingAnimation()
+        
+        // Add pulsing glow effect on border view
+        let pulseAnimation = CABasicAnimation(keyPath: "shadowOpacity")
+        pulseAnimation.fromValue = 0.6
+        pulseAnimation.toValue = 1.0
+        pulseAnimation.duration = 1.0
+        pulseAnimation.autoreverses = true
+        pulseAnimation.repeatCount = .greatestFiniteMagnitude
+        pulseAnimation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        borderView.layer.add(pulseAnimation, forKey: "pulsingGlow")
+        
+        // Add border color animation
+        let borderAnimation = CABasicAnimation(keyPath: "colors")
+        borderAnimation.fromValue = [
+            ArcaneConfiguration.ColorPalette.neonCyan.cgColor,
+            ArcaneConfiguration.ColorPalette.neonPurple.cgColor,
+            ArcaneConfiguration.ColorPalette.neonPink.cgColor
+        ]
+        borderAnimation.toValue = [
+            ArcaneConfiguration.ColorPalette.neonPink.cgColor,
+            ArcaneConfiguration.ColorPalette.neonCyan.cgColor,
+            ArcaneConfiguration.ColorPalette.neonPurple.cgColor
+        ]
+        borderAnimation.duration = 2.0
+        borderAnimation.autoreverses = true
+        borderAnimation.repeatCount = .greatestFiniteMagnitude
+        borderAnimation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        gradientBorderLayer.add(borderAnimation, forKey: "borderColorPulse")
+    }
+    
+    private func removePulsingAnimation() {
+        containerView.layer.removeAnimation(forKey: "pulsingGlow")
+        gradientBorderLayer.removeAnimation(forKey: "borderColorPulse")
+    }
+    
     func configureWithCard(_ card: MysticTileEntity) {
         if card.isEliminated {
             imageView.alpha = 0.2
             imageView.image = nil
+            updateBorderStyle(isRevealed: false, isEliminated: true)
         } else if card.isRevealed {
             imageView.alpha = 1.0
             imageView.image = UIImage(named: card.cardType.imageName)
+            updateBorderStyle(isRevealed: true, isEliminated: false)
         } else {
             imageView.alpha = 1.0
             imageView.image = UIImage(named: "beimian")
+            updateBorderStyle(isRevealed: false, isEliminated: false)
         }
+        
+        // Update layers frame
+        DispatchQueue.main.async { [weak self] in
+            self?.updateLayersFrame()
+        }
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        removePulsingAnimation()
+        imageView.image = nil
+        imageView.alpha = 1.0
     }
 }
 
