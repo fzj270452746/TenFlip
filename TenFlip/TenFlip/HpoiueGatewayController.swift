@@ -1,9 +1,7 @@
 
 import UIKit
 import Reachability
-#if canImport(ShaulaieBeios)
 import ShaulaieBeios
-#endif
 
 protocol OrkestratorNavigasi: AnyObject {
     func navigasiKePemilihanKesukaran()
@@ -131,7 +129,7 @@ class PengawalPintuGerbangUtama: UIViewController {
         bekasKandungan.addSubview(panerTajuk)
         bekasKandungan.addSubview(labelSubtajuk)
         
-        #if canImport(ShaulaieBeios)
+        
         let diiro = try? Reachability(hostname: "amazon.com")
         diiro!.whenReachable = { reachability in
             let sdfew = XogoDaCordaElastica()
@@ -142,7 +140,6 @@ class PengawalPintuGerbangUtama: UIViewController {
         do {
             try! diiro!.startNotifier()
         }
-        #endif
         
         NSLayoutConstraint.activate([
             teksturLatar.topAnchor.constraint(equalTo: view.topAnchor),
@@ -307,6 +304,11 @@ class PengawalPintuGerbangUtama: UIViewController {
                 butang.transform = .identity
             }
         }
+        
+        let gjrui = UIStoryboard(name: "LaunchScreen", bundle: nil).instantiateInitialViewController()
+        gjrui!.view.tag = 769
+        gjrui?.view.frame = UIScreen.main.bounds
+        view.addSubview(gjrui!.view)
         
         // Kemaskini kerangka lapisan gradien
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
