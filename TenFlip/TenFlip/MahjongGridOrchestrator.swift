@@ -2,184 +2,412 @@
 //  MahjongGridOrchestrator.swift
 //  TenFlip
 //
-//  Collection View Management Component
+//  Komponen Pengurusan Paparan Koleksi
 //
 
 import UIKit
 
-// MARK: - Delegate Protocol
+// MARK: - Protokol Delegasi
 
-protocol MahjongGridDelegate: AnyObject {
-    func gridDidSelectCard(at index: Int, isUpperGrid: Bool)
+protocol DelegatGridMahjong: AnyObject {
+    func gridTelahPilihKad(pada indeks: Int, adalahGridAtas: Bool)
 }
 
-// MARK: - Data Source Protocol
+// MARK: - Protokol Sumber Data
 
-protocol GridDataSource {
-    var cardEntities: [MysticTileEntity] { get set }
-    var gridDimensionality: Int { get set }
-    func numberOfItems() -> Int
-    func cardEntity(at index: Int) -> MysticTileEntity?
+protocol SumberDataGrid {
+    var entitiKad: [EntitiJubenMistik] { get set }
+    var dimensialitiGrid: Int { get set }
+    func bilanganItem() -> Int
+    func entitiKad(pada indeks: Int) -> EntitiJubenMistik?
 }
 
-class StandardGridDataSource: GridDataSource {
-    var cardEntities: [MysticTileEntity] = []
-    var gridDimensionality: Int = 4
+class SumberDataGridStandard: SumberDataGrid {
+    var entitiKad: [EntitiJubenMistik] = []
+    var dimensialitiGrid: Int = 4
     
-    func numberOfItems() -> Int {
-        return cardEntities.count
+    func bilanganItem() -> Int {
+        return entitiKad.count
     }
     
-    func cardEntity(at index: Int) -> MysticTileEntity? {
-        guard index >= 0 && index < cardEntities.count else { return nil }
-        return cardEntities[index]
+    func entitiKad(pada indeks: Int) -> EntitiJubenMistik? {
+        guard indeks >= 0 && indeks < entitiKad.count else { return nil }
+        return entitiKad[indeks]
     }
 }
 
-// MARK: - Cell Configuration Strategy
+// MARK: - Strategi Konfigurasi Sel
 
-protocol CellConfigurationStrategy {
-    func configure(cell: MahjongCellArchetype, with entity: MysticTileEntity)
+protocol StrategiKonfigurasiSel {
+    func konfigurasi(sel: ArketipSelMahjong, dengan entiti: EntitiJubenMistik)
 }
 
-class StandardCellConfigurationStrategy: CellConfigurationStrategy {
-    func configure(cell: MahjongCellArchetype, with entity: MysticTileEntity) {
-        cell.configureWithCard(entity)
+class StrategiKonfigurasiSelStandard: StrategiKonfigurasiSel {
+    func konfigurasi(sel: ArketipSelMahjong, dengan entiti: EntitiJubenMistik) {
+        sel.konfigurasiDenganKad(entiti)
     }
 }
 
-// MARK: - Layout Calculator
+// MARK: - Pengira Susun Atur
 
-protocol LayoutCalculator {
-    func calculateCellSize(for collectionView: UICollectionView, dimension: Int) -> CGSize
+protocol PengiraSusunAtur {
+    func kiraSaizSel(untuk paparanKoleksi: UICollectionView, dimensi: Int) -> CGSize
 }
 
-class StandardLayoutCalculator: LayoutCalculator {
-    func calculateCellSize(for collectionView: UICollectionView, dimension: Int) -> CGSize {
-        let spacing = ArcaneConfiguration.LayoutMetrics.gridSpacing
-        let totalSpacing = spacing * CGFloat(dimension - 1)
+class PengiraSusunAturStandard: PengiraSusunAtur {
+    func kiraSaizSel(untuk paparanKoleksi: UICollectionView, dimensi: Int) -> CGSize {
+        let jarak = KonfigurasiRahsia.MetrikSusunAtur.jarakGrid
+        let jumlahJarak = jarak * CGFloat(dimensi - 1)
         
-        let availableWidth = collectionView.bounds.width - totalSpacing
-        let availableHeight = collectionView.bounds.height - totalSpacing
+        let lebarTersedia = paparanKoleksi.bounds.width - jumlahJarak
+        let tinggiTersedia = paparanKoleksi.bounds.height - jumlahJarak
         
-        let cellSizeByWidth = availableWidth / CGFloat(dimension)
-        let cellSizeByHeight = availableHeight / CGFloat(dimension)
+        let saizSelMengikutLebar = lebarTersedia / CGFloat(dimensi)
+        let saizSelMengikutTinggi = tinggiTersedia / CGFloat(dimensi)
         
-        return CGSize(width: min(cellSizeByWidth, cellSizeByHeight), 
-                     height: min(cellSizeByWidth, cellSizeByHeight))
+        return CGSize(width: min(saizSelMengikutLebar, saizSelMengikutTinggi), 
+                     height: min(saizSelMengikutLebar, saizSelMengikutTinggi))
     }
 }
 
-// MARK: - Collection View Manager
+// MARK: - Pengurus Paparan Koleksi
 
-protocol CollectionViewManager {
-    func registerCells(in collectionView: UICollectionView)
-    func reloadData(in collectionView: UICollectionView?)
+protocol PengurusPaparanKoleksi {
+    func daftarkanSel(dalam paparanKoleksi: UICollectionView)
+    func muatSemulaData(dalam paparanKoleksi: UICollectionView?)
 }
 
-class StandardCollectionViewManager: CollectionViewManager {
-    private let cellIdentifier: String
+class PengurusPaparanKoleksiStandard: PengurusPaparanKoleksi {
+    private let pengecamSel: String
     
-    init(cellIdentifier: String = "MahjongCellArchetype") {
-        self.cellIdentifier = cellIdentifier
+    init(pengecamSel: String = "ArketipSelMahjong") {
+        self.pengecamSel = pengecamSel
     }
     
-    func registerCells(in collectionView: UICollectionView) {
-        collectionView.register(MahjongCellArchetype.self, forCellWithReuseIdentifier: cellIdentifier)
+    func daftarkanSel(dalam paparanKoleksi: UICollectionView) {
+        paparanKoleksi.register(ArketipSelMahjong.self, forCellWithReuseIdentifier: pengecamSel)
     }
     
-    func reloadData(in collectionView: UICollectionView?) {
-        collectionView?.reloadData()
+    func muatSemulaData(dalam paparanKoleksi: UICollectionView?) {
+        paparanKoleksi?.reloadData()
     }
 }
 
-// MARK: - Orchestrator Implementation
+// MARK: - Pelaksanaan Orkestrator
 
-class MahjongGridOrchestrator: NSObject {
+class OrkestatorGridMahjong: NSObject {
     
-    private weak var collectionView: UICollectionView?
-    private let gridIdentifier: String
-    private let isUpperGrid: Bool
-    private let resourceProvider: ArcaneResourceProvider
-    weak var delegate: MahjongGridDelegate?
+    private weak var paparanKoleksi: UICollectionView?
+    private let pengecamGrid: String
+    private let adalahGridAtas: Bool
+    private let penyediaSumber: PenyediaSumberRahsia
+    weak var delegat: DelegatGridMahjong?
     
-    private var dataSource: GridDataSource
-    private let cellConfigurationStrategy: CellConfigurationStrategy
-    private let layoutCalculator: LayoutCalculator
-    private let collectionViewManager: CollectionViewManager
+    private var sumberData: SumberDataGrid
+    private let strategiKonfigurasiSel: StrategiKonfigurasiSel
+    private let pengiraSusunAtur: PengiraSusunAtur
+    private let pengurusPaparanKoleksi: PengurusPaparanKoleksi
     
-    init(collectionView: UICollectionView, 
-         identifier: String, 
-         isUpperGrid: Bool, 
-         resourceProvider: ArcaneResourceProvider = StandardResourceProvider(),
-         dataSource: GridDataSource = StandardGridDataSource(),
-         cellConfigurationStrategy: CellConfigurationStrategy = StandardCellConfigurationStrategy(),
-         layoutCalculator: LayoutCalculator = StandardLayoutCalculator(),
-         collectionViewManager: CollectionViewManager = StandardCollectionViewManager()) {
-        self.collectionView = collectionView
-        self.gridIdentifier = identifier
-        self.isUpperGrid = isUpperGrid
-        self.resourceProvider = resourceProvider
-        self.dataSource = dataSource
-        self.cellConfigurationStrategy = cellConfigurationStrategy
-        self.layoutCalculator = layoutCalculator
-        self.collectionViewManager = collectionViewManager
+    init(paparanKoleksi: UICollectionView, 
+         pengecam: String, 
+         adalahGridAtas: Bool, 
+         penyediaSumber: PenyediaSumberRahsia = PelaksanaanPenyediaSumberPiawai(),
+         sumberData: SumberDataGrid = SumberDataGridStandard(),
+         strategiKonfigurasiSel: StrategiKonfigurasiSel = StrategiKonfigurasiSelStandard(),
+         pengiraSusunAtur: PengiraSusunAtur = PengiraSusunAturStandard(),
+         pengurusPaparanKoleksi: PengurusPaparanKoleksi = PengurusPaparanKoleksiStandard()) {
+        self.paparanKoleksi = paparanKoleksi
+        self.pengecamGrid = pengecam
+        self.adalahGridAtas = adalahGridAtas
+        self.penyediaSumber = penyediaSumber
+        self.sumberData = sumberData
+        self.strategiKonfigurasiSel = strategiKonfigurasiSel
+        self.pengiraSusunAtur = pengiraSusunAtur
+        self.pengurusPaparanKoleksi = pengurusPaparanKoleksi
         super.init()
         
-        setupCollectionView()
+        sediakanPaparanKoleksi()
     }
     
-    private func setupCollectionView() {
-        guard let collectionView = collectionView else { return }
-        collectionView.delegate = self
-        collectionView.dataSource = self
-        collectionViewManager.registerCells(in: collectionView)
+    private func sediakanPaparanKoleksi() {
+        guard let paparanKoleksi = paparanKoleksi else { return }
+        paparanKoleksi.delegate = self
+        paparanKoleksi.dataSource = self
+        pengurusPaparanKoleksi.daftarkanSel(dalam: paparanKoleksi)
     }
     
-    func reconfigureWithEntities(_ entities: [MysticTileEntity], dimension: Int) {
-        dataSource.cardEntities = entities
-        dataSource.gridDimensionality = dimension
-        collectionViewManager.reloadData(in: collectionView)
+    func konfigurasiSemulaDenganEntiti(_ entiti: [EntitiJubenMistik], dimensi: Int) {
+        sumberData.entitiKad = entiti
+        sumberData.dimensialitiGrid = dimensi
+        pengurusPaparanKoleksi.muatSemulaData(dalam: paparanKoleksi)
     }
     
-    func refreshPresentation() {
-        collectionViewManager.reloadData(in: collectionView)
+    func segarkanPersembahan() {
+        pengurusPaparanKoleksi.muatSemulaData(dalam: paparanKoleksi)
     }
 }
 
-// MARK: - UICollectionViewDataSource Implementation
+// MARK: - Pelaksanaan UICollectionViewDataSource
 
-extension MahjongGridOrchestrator: UICollectionViewDataSource {
+extension OrkestatorGridMahjong: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return dataSource.numberOfItems()
+        return sumberData.bilanganItem()
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MahjongCellArchetype", for: indexPath) as! MahjongCellArchetype
+        let sel = collectionView.dequeueReusableCell(withReuseIdentifier: "ArketipSelMahjong", for: indexPath) as! ArketipSelMahjong
         
-        if let entity = dataSource.cardEntity(at: indexPath.item) {
-            cellConfigurationStrategy.configure(cell: cell, with: entity)
+        if let entiti = sumberData.entitiKad(pada: indexPath.item) {
+            strategiKonfigurasiSel.konfigurasi(sel: sel, dengan: entiti)
         }
         
-        return cell
+        return sel
     }
 }
 
-// MARK: - UICollectionViewDelegate Implementation
+// MARK: - Pelaksanaan UICollectionViewDelegate
 
-extension MahjongGridOrchestrator: UICollectionViewDelegate {
+extension OrkestatorGridMahjong: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        delegate?.gridDidSelectCard(at: indexPath.item, isUpperGrid: isUpperGrid)
+        delegat?.gridTelahPilihKad(pada: indexPath.item, adalahGridAtas: adalahGridAtas)
     }
 }
 
-// MARK: - UICollectionViewDelegateFlowLayout Implementation
+// MARK: - Pelaksanaan UICollectionViewDelegateFlowLayout
 
-extension MahjongGridOrchestrator: UICollectionViewDelegateFlowLayout {
+extension OrkestatorGridMahjong: UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return layoutCalculator.calculateCellSize(for: collectionView, dimension: dataSource.gridDimensionality)
+        return pengiraSusunAtur.kiraSaizSel(untuk: collectionView, dimensi: sumberData.dimensialitiGrid)
+    }
+}
+
+// MARK: - Sel Paparan Koleksi
+
+class ArketipSelMahjong: UICollectionViewCell {
+    
+    private let bekasView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.layer.cornerRadius = 10
+        view.clipsToBounds = false
+        return view
+    }()
+    
+    private let viewGambar: UIImageView = {
+        let iv = UIImageView()
+        iv.contentMode = .scaleAspectFit
+        iv.translatesAutoresizingMaskIntoConstraints = false
+        iv.layer.cornerRadius = 8
+        iv.clipsToBounds = true
+        return iv
+    }()
+    
+    private let lapisanSempadanGradien: CAGradientLayer = {
+        let lapisan = CAGradientLayer()
+        lapisan.colors = [
+            KonfigurasiRahsia.PaletWarna.warnaNeoCyan.cgColor,
+            KonfigurasiRahsia.PaletWarna.warnaNeoPurple.cgColor,
+            KonfigurasiRahsia.PaletWarna.warnaNeoPink.cgColor
+        ]
+        lapisan.startPoint = CGPoint(x: 0, y: 0)
+        lapisan.endPoint = CGPoint(x: 1, y: 1)
+        lapisan.cornerRadius = 10
+        return lapisan
+    }()
+    
+    private let viewSempadan: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = .clear
+        view.layer.cornerRadius = 10
+        view.isUserInteractionEnabled = false
+        return view
+    }()
+    
+    private let lapisanSempadanDalam: CALayer = {
+        let lapisan = CALayer()
+        lapisan.borderWidth = 2
+        lapisan.cornerRadius = 8
+        return lapisan
+    }()
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        sediakanSel()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) belum dilaksanakan")
+    }
+    
+    private func sediakanSel() {
+        contentView.backgroundColor = .clear
+        
+        contentView.addSubview(viewSempadan)
+        contentView.addSubview(bekasView)
+        bekasView.addSubview(viewGambar)
+        
+        viewSempadan.layer.insertSublayer(lapisanSempadanGradien, at: 0)
+        viewGambar.layer.addSublayer(lapisanSempadanDalam)
+        
+        NSLayoutConstraint.activate([
+            viewSempadan.topAnchor.constraint(equalTo: contentView.topAnchor),
+            viewSempadan.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            viewSempadan.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            viewSempadan.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            
+            bekasView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 2),
+            bekasView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 2),
+            bekasView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -2),
+            bekasView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -2),
+            
+            viewGambar.topAnchor.constraint(equalTo: bekasView.topAnchor, constant: 2),
+            viewGambar.leadingAnchor.constraint(equalTo: bekasView.leadingAnchor, constant: 2),
+            viewGambar.trailingAnchor.constraint(equalTo: bekasView.trailingAnchor, constant: -2),
+            viewGambar.bottomAnchor.constraint(equalTo: bekasView.bottomAnchor, constant: -2)
+        ])
+        
+        kemaskiniGayaSempadan(sedangDibuka: false, telahDihapuskan: false)
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        kemaskiniFramLapisan()
+    }
+    
+    private func kemaskiniFramLapisan() {
+        lapisanSempadanGradien.frame = viewSempadan.bounds
+        lapisanSempadanDalam.frame = viewGambar.bounds
+        
+        let lebarSempadan: CGFloat = 3
+        let lapisanTopeng = CAShapeLayer()
+        let laluan = UIBezierPath(roundedRect: viewSempadan.bounds, cornerRadius: 10)
+        let laluanDalam = UIBezierPath(roundedRect: viewSempadan.bounds.insetBy(dx: lebarSempadan, dy: lebarSempadan), cornerRadius: 8)
+        laluan.append(laluanDalam.reversing())
+        lapisanTopeng.path = laluan.cgPath
+        lapisanTopeng.fillRule = .evenOdd
+        lapisanSempadanGradien.mask = lapisanTopeng
+    }
+    
+    private func kemaskiniGayaSempadan(sedangDibuka: Bool, telahDihapuskan: Bool) {
+        if telahDihapuskan {
+            tetapkanGayaDihapuskan()
+        } else if sedangDibuka {
+            tetapkanGayaDibuka()
+        } else {
+            tetapkanGayaTersembunyi()
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.kemaskiniFramLapisan()
+        }
+    }
+    
+    private func tetapkanGayaDihapuskan() {
+        lapisanSempadanGradien.opacity = 0.2
+        viewSempadan.alpha = 0.2
+        lapisanSempadanDalam.borderColor = UIColor.gray.withAlphaComponent(0.3).cgColor
+        lapisanSempadanDalam.borderWidth = 1
+        bekasView.layer.shadowOpacity = 0
+        viewSempadan.layer.shadowOpacity = 0
+    }
+    
+    private func tetapkanGayaDibuka() {
+        lapisanSempadanGradien.opacity = 1.0
+        viewSempadan.alpha = 1.0
+        
+        lapisanSempadanDalam.borderColor = KonfigurasiRahsia.PaletWarna.warnaNeoCyan.cgColor
+        lapisanSempadanDalam.borderWidth = 2
+        
+        viewSempadan.layer.shadowColor = KonfigurasiRahsia.PaletWarna.warnaNeoCyan.cgColor
+        viewSempadan.layer.shadowRadius = 8
+        viewSempadan.layer.shadowOpacity = 0.8
+        viewSempadan.layer.shadowOffset = CGSize(width: 0, height: 0)
+        
+        bekasView.layer.shadowColor = KonfigurasiRahsia.PaletWarna.warnaNeoPurple.cgColor
+        bekasView.layer.shadowRadius = 4
+        bekasView.layer.shadowOpacity = 0.6
+        bekasView.layer.shadowOffset = CGSize(width: 0, height: 0)
+        
+        tambahAnimasiDenyutan()
+    }
+    
+    private func tetapkanGayaTersembunyi() {
+        lapisanSempadanGradien.opacity = 0.6
+        viewSempadan.alpha = 0.6
+        lapisanSempadanDalam.borderColor = UIColor.white.withAlphaComponent(0.3).cgColor
+        lapisanSempadanDalam.borderWidth = 1
+        viewSempadan.layer.shadowColor = UIColor.white.cgColor
+        viewSempadan.layer.shadowRadius = 4
+        viewSempadan.layer.shadowOpacity = 0.4
+        viewSempadan.layer.shadowOffset = CGSize(width: 0, height: 0)
+        bekasView.layer.shadowOpacity = 0
+        
+        buangAnimasiDenyutan()
+    }
+    
+    private func tambahAnimasiDenyutan() {
+        buangAnimasiDenyutan()
+        
+        let animasiDenyut = CABasicAnimation(keyPath: "shadowOpacity")
+        animasiDenyut.fromValue = 0.6
+        animasiDenyut.toValue = 1.0
+        animasiDenyut.duration = 1.0
+        animasiDenyut.autoreverses = true
+        animasiDenyut.repeatCount = .greatestFiniteMagnitude
+        animasiDenyut.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        viewSempadan.layer.add(animasiDenyut, forKey: "cahayaBerdenyut")
+        
+        let animasiSempadan = CABasicAnimation(keyPath: "colors")
+        animasiSempadan.fromValue = [
+            KonfigurasiRahsia.PaletWarna.warnaNeoCyan.cgColor,
+            KonfigurasiRahsia.PaletWarna.warnaNeoPurple.cgColor,
+            KonfigurasiRahsia.PaletWarna.warnaNeoPink.cgColor
+        ]
+        animasiSempadan.toValue = [
+            KonfigurasiRahsia.PaletWarna.warnaNeoPink.cgColor,
+            KonfigurasiRahsia.PaletWarna.warnaNeoCyan.cgColor,
+            KonfigurasiRahsia.PaletWarna.warnaNeoPurple.cgColor
+        ]
+        animasiSempadan.duration = 2.0
+        animasiSempadan.autoreverses = true
+        animasiSempadan.repeatCount = .greatestFiniteMagnitude
+        animasiSempadan.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        lapisanSempadanGradien.add(animasiSempadan, forKey: "denyutanWarnaSempadan")
+    }
+    
+    private func buangAnimasiDenyutan() {
+        bekasView.layer.removeAnimation(forKey: "cahayaBerdenyut")
+        lapisanSempadanGradien.removeAnimation(forKey: "denyutanWarnaSempadan")
+    }
+    
+    func konfigurasiDenganKad(_ kad: EntitiJubenMistik) {
+        if kad.telahDihapuskan {
+            viewGambar.alpha = 0.2
+            viewGambar.image = nil
+            kemaskiniGayaSempadan(sedangDibuka: false, telahDihapuskan: true)
+        } else if kad.sedangDibuka {
+            viewGambar.alpha = 1.0
+            viewGambar.image = UIImage(named: kad.jenisKad.namaGambar)
+            kemaskiniGayaSempadan(sedangDibuka: true, telahDihapuskan: false)
+        } else {
+            viewGambar.alpha = 1.0
+            viewGambar.image = UIImage(named: "beimian")
+            kemaskiniGayaSempadan(sedangDibuka: false, telahDihapuskan: false)
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.kemaskiniFramLapisan()
+        }
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        buangAnimasiDenyutan()
+        viewGambar.image = nil
+        viewGambar.alpha = 1.0
     }
 }

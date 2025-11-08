@@ -1,205 +1,249 @@
 
 import UIKit
 
-// MARK: - Color Provider Protocol
+// MARK: - Protokol Penyedia Warna
 
-protocol ColorProvider {
-    var neonPink: UIColor { get }
-    var neonCyan: UIColor { get }
-    var neonPurple: UIColor { get }
-    var neonOrange: UIColor { get }
-    var neonGreen: UIColor { get }
-    var neonBlue: UIColor { get }
-    var gradientStart: UIColor { get }
-    var gradientEnd: UIColor { get }
-    var startButtonGradientStart: UIColor { get }
-    var startButtonGradientEnd: UIColor { get }
-    var leaderboardButtonGradientStart: UIColor { get }
-    var leaderboardButtonGradientEnd: UIColor { get }
-    var rulesButtonGradientStart: UIColor { get }
-    var rulesButtonGradientEnd: UIColor { get }
-    var feedbackButtonGradientStart: UIColor { get }
-    var feedbackButtonGradientEnd: UIColor { get }
-    var glassBackground: UIColor { get }
-    var glassBorder: UIColor { get }
+protocol PenyediaWarna {
+    var warnaNeoPink: UIColor { get }
+    var warnaNeoCyan: UIColor { get }
+    var warnaNeoPurple: UIColor { get }
+    var warnaOren: UIColor { get }
+    var warnaHijauNeon: UIColor { get }
+    var warnabiruNeon: UIColor { get }
+    var warnaMulaGradien: UIColor { get }
+    var warnaTamatGradien: UIColor { get }
+    var warnaButangMulaGradienAwal: UIColor { get }
+    var warnaButangMulaGradienAkhir: UIColor { get }
+    var warnaButangPapanKedudukanGradienAwal: UIColor { get }
+    var warnaButangPapanKedudukanGradienAkhir: UIColor { get }
+    var warnaButangPeraturanGradienAwal: UIColor { get }
+    var warnaButangPeraturanGradienAkhir: UIColor { get }
+    var warnaButangMaklumBalasGradienAwal: UIColor { get }
+    var warnaButangMaklumBalasGradienAkhir: UIColor { get }
+    var warnaLatarKaca: UIColor { get }
+    var warnaSempadanKaca: UIColor { get }
 }
 
-class ModernColorProvider: ColorProvider {
-    var neonPink: UIColor { UIColor(red: 1.0, green: 0.2, blue: 0.8, alpha: 1.0) }
-    var neonCyan: UIColor { UIColor(red: 0.0, green: 1.0, blue: 1.0, alpha: 1.0) }
-    var neonPurple: UIColor { UIColor(red: 0.6, green: 0.2, blue: 1.0, alpha: 1.0) }
-    var neonOrange: UIColor { UIColor(red: 1.0, green: 0.5, blue: 0.0, alpha: 1.0) }
-    var neonGreen: UIColor { UIColor(red: 0.2, green: 1.0, blue: 0.4, alpha: 1.0) }
-    var neonBlue: UIColor { UIColor(red: 0.2, green: 0.6, blue: 1.0, alpha: 1.0) }
-    var gradientStart: UIColor { UIColor(red: 0.2, green: 0.0, blue: 0.4, alpha: 1.0) }
-    var gradientEnd: UIColor { UIColor(red: 0.0, green: 0.2, blue: 0.4, alpha: 1.0) }
-    var startButtonGradientStart: UIColor { UIColor(red: 1.0, green: 0.3, blue: 0.6, alpha: 1.0) }
-    var startButtonGradientEnd: UIColor { UIColor(red: 0.8, green: 0.2, blue: 1.0, alpha: 1.0) }
-    var leaderboardButtonGradientStart: UIColor { UIColor(red: 0.2, green: 0.8, blue: 1.0, alpha: 1.0) }
-    var leaderboardButtonGradientEnd: UIColor { UIColor(red: 0.0, green: 0.6, blue: 1.0, alpha: 1.0) }
-    var rulesButtonGradientStart: UIColor { UIColor(red: 0.2, green: 1.0, blue: 0.6, alpha: 1.0) }
-    var rulesButtonGradientEnd: UIColor { UIColor(red: 0.0, green: 0.8, blue: 0.4, alpha: 1.0) }
-    var feedbackButtonGradientStart: UIColor { UIColor(red: 0.8, green: 0.4, blue: 1.0, alpha: 1.0) }
-    var feedbackButtonGradientEnd: UIColor { UIColor(red: 0.6, green: 0.2, blue: 0.9, alpha: 1.0) }
-    var glassBackground: UIColor { UIColor.white.withAlphaComponent(0.15) }
-    var glassBorder: UIColor { UIColor.white.withAlphaComponent(0.3) }
-}
-
-// MARK: - Layout Metrics Provider
-
-protocol LayoutMetricsProvider {
-    var gridSpacing: CGFloat { get }
-    var cornerRadius: CGFloat { get }
-    var shadowOpacity: Float { get }
-    var shadowRadius: CGFloat { get }
-    var shadowOffset: CGSize { get }
-    var buttonHeight: CGFloat { get }
-    var standardPadding: CGFloat { get }
-    var glassCornerRadius: CGFloat { get }
-    var neonGlowRadius: CGFloat { get }
-    var neonGlowOpacity: Float { get }
-    var buttonWidth: CGFloat { get }
-    var largeButtonHeight: CGFloat { get }
-    var regularButtonHeight: CGFloat { get }
-}
-
-class StandardLayoutMetricsProvider: LayoutMetricsProvider {
-    var gridSpacing: CGFloat { 4 }
-    var cornerRadius: CGFloat { 12 }
-    var shadowOpacity: Float { 0.3 }
-    var shadowRadius: CGFloat { 6 }
-    var shadowOffset: CGSize { CGSize(width: 0, height: 4) }
-    var buttonHeight: CGFloat { 50 }
-    var standardPadding: CGFloat { 20 }
-    var glassCornerRadius: CGFloat { 20 }
-    var neonGlowRadius: CGFloat { 15 }
-    var neonGlowOpacity: Float { 0.8 }
-    var buttonWidth: CGFloat { 240 }
-    var largeButtonHeight: CGFloat { 70 }
-    var regularButtonHeight: CGFloat { 60 }
-}
-
-// MARK: - Animation Configuration Provider
-
-protocol AnimationConfigurationProvider {
-    var matchDelay: TimeInterval { get }
-    var colorFlash: TimeInterval { get }
-    var dialogAppear: TimeInterval { get }
-    var dialogDismiss: TimeInterval { get }
-}
-
-class StandardAnimationConfigurationProvider: AnimationConfigurationProvider {
-    var matchDelay: TimeInterval { 0.5 }
-    var colorFlash: TimeInterval { 0.3 }
-    var dialogAppear: TimeInterval { 0.3 }
-    var dialogDismiss: TimeInterval { 0.2 }
-}
-
-// MARK: - Game Parameters Provider
-
-protocol GameParametersProvider {
-    var timeBonus: Int { get }
-    var leaderboardLimit: Int { get }
-}
-
-class StandardGameParametersProvider: GameParametersProvider {
-    var timeBonus: Int { 5 }
-    var leaderboardLimit: Int { 10 }
-}
-
-// MARK: - Configuration Container
-
-struct ArcaneConfiguration {
+class PelaksanaanPenyediaWarnaModen: PenyediaWarna {
+    var warnaNeoPink: UIColor { 
+        return buatWarna(merah: 1.0, hijau: 0.2, biru: 0.8) 
+    }
+    var warnaNeoCyan: UIColor { 
+        return buatWarna(merah: 0.0, hijau: 1.0, biru: 1.0) 
+    }
+    var warnaNeoPurple: UIColor { 
+        return buatWarna(merah: 0.6, hijau: 0.2, biru: 1.0) 
+    }
+    var warnaOren: UIColor { 
+        return buatWarna(merah: 1.0, hijau: 0.5, biru: 0.0) 
+    }
+    var warnaHijauNeon: UIColor { 
+        return buatWarna(merah: 0.2, hijau: 1.0, biru: 0.4) 
+    }
+    var warnabiruNeon: UIColor { 
+        return buatWarna(merah: 0.2, hijau: 0.6, biru: 1.0) 
+    }
+    var warnaMulaGradien: UIColor { 
+        return buatWarna(merah: 0.2, hijau: 0.0, biru: 0.4) 
+    }
+    var warnaTamatGradien: UIColor { 
+        return buatWarna(merah: 0.0, hijau: 0.2, biru: 0.4) 
+    }
+    var warnaButangMulaGradienAwal: UIColor { 
+        return buatWarna(merah: 1.0, hijau: 0.3, biru: 0.6) 
+    }
+    var warnaButangMulaGradienAkhir: UIColor { 
+        return buatWarna(merah: 0.8, hijau: 0.2, biru: 1.0) 
+    }
+    var warnaButangPapanKedudukanGradienAwal: UIColor { 
+        return buatWarna(merah: 0.2, hijau: 0.8, biru: 1.0) 
+    }
+    var warnaButangPapanKedudukanGradienAkhir: UIColor { 
+        return buatWarna(merah: 0.0, hijau: 0.6, biru: 1.0) 
+    }
+    var warnaButangPeraturanGradienAwal: UIColor { 
+        return buatWarna(merah: 0.2, hijau: 1.0, biru: 0.6) 
+    }
+    var warnaButangPeraturanGradienAkhir: UIColor { 
+        return buatWarna(merah: 0.0, hijau: 0.8, biru: 0.4) 
+    }
+    var warnaButangMaklumBalasGradienAwal: UIColor { 
+        return buatWarna(merah: 0.8, hijau: 0.4, biru: 1.0) 
+    }
+    var warnaButangMaklumBalasGradienAkhir: UIColor { 
+        return buatWarna(merah: 0.6, hijau: 0.2, biru: 0.9) 
+    }
+    var warnaLatarKaca: UIColor { 
+        return UIColor.white.withAlphaComponent(0.15) 
+    }
+    var warnaSempadanKaca: UIColor { 
+        return UIColor.white.withAlphaComponent(0.3) 
+    }
     
-    static let colorPalette: ColorProvider = ModernColorProvider()
-    static let layoutMetrics: LayoutMetricsProvider = StandardLayoutMetricsProvider()
-    static let animationDurations: AnimationConfigurationProvider = StandardAnimationConfigurationProvider()
-    static let gameParameters: GameParametersProvider = StandardGameParametersProvider()
+    private func buatWarna(merah: CGFloat, hijau: CGFloat, biru: CGFloat) -> UIColor {
+        return UIColor(red: merah, green: hijau, blue: biru, alpha: 1.0)
+    }
+}
+
+// MARK: - Protokol Penyedia Metrik Susun Atur
+
+protocol PenyediaMetrikSusunAtur {
+    var jarakGrid: CGFloat { get }
+    var jejariSudut: CGFloat { get }
+    var kelegumanBayang: Float { get }
+    var jejarieBayang: CGFloat { get }
+    var ofsetBayang: CGSize { get }
+    var tinggiButang: CGFloat { get }
+    var pelapisanPiawai: CGFloat { get }
+    var jejariSudutKaca: CGFloat { get }
+    var jejariCahayaNeon: CGFloat { get }
+    var kelegumanCahayaNeon: Float { get }
+    var lebarButang: CGFloat { get }
+    var tinggiButangBesar: CGFloat { get }
+    var tinggiButangBiasa: CGFloat { get }
+}
+
+class PelaksanaanPenyediaMetrikPiawai: PenyediaMetrikSusunAtur {
+    var jarakGrid: CGFloat { return 4 }
+    var jejariSudut: CGFloat { return 12 }
+    var kelegumanBayang: Float { return 0.3 }
+    var jejarieBayang: CGFloat { return 6 }
+    var ofsetBayang: CGSize { return CGSize(width: 0, height: 4) }
+    var tinggiButang: CGFloat { return 50 }
+    var pelapisanPiawai: CGFloat { return 20 }
+    var jejariSudutKaca: CGFloat { return 20 }
+    var jejariCahayaNeon: CGFloat { return 15 }
+    var kelegumanCahayaNeon: Float { return 0.8 }
+    var lebarButang: CGFloat { return 240 }
+    var tinggiButangBesar: CGFloat { return 70 }
+    var tinggiButangBiasa: CGFloat { return 60 }
+}
+
+// MARK: - Protokol Penyedia Konfigurasi Animasi
+
+protocol PenyediaKonfigurasiAnimasi {
+    var kelewatanPadanan: TimeInterval { get }
+    var denyutanWarna: TimeInterval { get }
+    var kemunculanDialog: TimeInterval { get }
+    var penutupanDialog: TimeInterval { get }
+}
+
+class PelaksanaanPenyediaAnimasiPiawai: PenyediaKonfigurasiAnimasi {
+    var kelewatanPadanan: TimeInterval { return 0.5 }
+    var denyutanWarna: TimeInterval { return 0.3 }
+    var kemunculanDialog: TimeInterval { return 0.3 }
+    var penutupanDialog: TimeInterval { return 0.2 }
+}
+
+// MARK: - Protokol Penyedia Parameter Permainan
+
+protocol PenyediaParameterPermainan {
+    var bonusMasa: Int { get }
+    var hadPapanKedudukan: Int { get }
+}
+
+class PelaksanaanPenyediaParameterPiawai: PenyediaParameterPermainan {
+    var bonusMasa: Int { return 5 }
+    var hadPapanKedudukan: Int { return 10 }
+}
+
+// MARK: - Bekas Konfigurasi Utama
+
+struct KonfigurasiRahsia {
     
-    // Backward compatibility - ColorPalette
-    struct ColorPalette {
-        static var neonPink: UIColor { ArcaneConfiguration.colorPalette.neonPink }
-        static var neonCyan: UIColor { ArcaneConfiguration.colorPalette.neonCyan }
-        static var neonPurple: UIColor { ArcaneConfiguration.colorPalette.neonPurple }
-        static var neonOrange: UIColor { ArcaneConfiguration.colorPalette.neonOrange }
-        static var neonGreen: UIColor { ArcaneConfiguration.colorPalette.neonGreen }
-        static var neonBlue: UIColor { ArcaneConfiguration.colorPalette.neonBlue }
-        static var gradientStart: UIColor { ArcaneConfiguration.colorPalette.gradientStart }
-        static var gradientEnd: UIColor { ArcaneConfiguration.colorPalette.gradientEnd }
-        static var startButtonGradientStart: UIColor { ArcaneConfiguration.colorPalette.startButtonGradientStart }
-        static var startButtonGradientEnd: UIColor { ArcaneConfiguration.colorPalette.startButtonGradientEnd }
-        static var leaderboardButtonGradientStart: UIColor { ArcaneConfiguration.colorPalette.leaderboardButtonGradientStart }
-        static var leaderboardButtonGradientEnd: UIColor { ArcaneConfiguration.colorPalette.leaderboardButtonGradientEnd }
-        static var rulesButtonGradientStart: UIColor { ArcaneConfiguration.colorPalette.rulesButtonGradientStart }
-        static var rulesButtonGradientEnd: UIColor { ArcaneConfiguration.colorPalette.rulesButtonGradientEnd }
-        static var feedbackButtonGradientStart: UIColor { ArcaneConfiguration.colorPalette.feedbackButtonGradientStart }
-        static var feedbackButtonGradientEnd: UIColor { ArcaneConfiguration.colorPalette.feedbackButtonGradientEnd }
-        static var glassBackground: UIColor { ArcaneConfiguration.colorPalette.glassBackground }
-        static var glassBorder: UIColor { ArcaneConfiguration.colorPalette.glassBorder }
+    static let paletWarna: PenyediaWarna = PelaksanaanPenyediaWarnaModen()
+    static let metrikSusunAtur: PenyediaMetrikSusunAtur = PelaksanaanPenyediaMetrikPiawai()
+    static let tempoAnimasi: PenyediaKonfigurasiAnimasi = PelaksanaanPenyediaAnimasiPiawai()
+    static let parameterPermainan: PenyediaParameterPermainan = PelaksanaanPenyediaParameterPiawai()
+    
+    // Keserasian ke belakang - PaletWarna
+    struct PaletWarna {
+        static var warnaNeoPink: UIColor { KonfigurasiRahsia.paletWarna.warnaNeoPink }
+        static var warnaNeoCyan: UIColor { KonfigurasiRahsia.paletWarna.warnaNeoCyan }
+        static var warnaNeoPurple: UIColor { KonfigurasiRahsia.paletWarna.warnaNeoPurple }
+        static var warnaOren: UIColor { KonfigurasiRahsia.paletWarna.warnaOren }
+        static var warnaHijauNeon: UIColor { KonfigurasiRahsia.paletWarna.warnaHijauNeon }
+        static var warnabiruNeon: UIColor { KonfigurasiRahsia.paletWarna.warnabiruNeon }
+        static var warnaMulaGradien: UIColor { KonfigurasiRahsia.paletWarna.warnaMulaGradien }
+        static var warnaTamatGradien: UIColor { KonfigurasiRahsia.paletWarna.warnaTamatGradien }
+        static var warnaButangMulaGradienAwal: UIColor { KonfigurasiRahsia.paletWarna.warnaButangMulaGradienAwal }
+        static var warnaButangMulaGradienAkhir: UIColor { KonfigurasiRahsia.paletWarna.warnaButangMulaGradienAkhir }
+        static var warnaButangPapanKedudukanGradienAwal: UIColor { KonfigurasiRahsia.paletWarna.warnaButangPapanKedudukanGradienAwal }
+        static var warnaButangPapanKedudukanGradienAkhir: UIColor { KonfigurasiRahsia.paletWarna.warnaButangPapanKedudukanGradienAkhir }
+        static var warnaButangPeraturanGradienAwal: UIColor { KonfigurasiRahsia.paletWarna.warnaButangPeraturanGradienAwal }
+        static var warnaButangPeraturanGradienAkhir: UIColor { KonfigurasiRahsia.paletWarna.warnaButangPeraturanGradienAkhir }
+        static var warnaButangMaklumBalasGradienAwal: UIColor { KonfigurasiRahsia.paletWarna.warnaButangMaklumBalasGradienAwal }
+        static var warnaButangMaklumBalasGradienAkhir: UIColor { KonfigurasiRahsia.paletWarna.warnaButangMaklumBalasGradienAkhir }
+        static var warnaLatarKaca: UIColor { KonfigurasiRahsia.paletWarna.warnaLatarKaca }
+        static var warnaSempadanKaca: UIColor { KonfigurasiRahsia.paletWarna.warnaSempadanKaca }
         
-        // Legacy colors
-        static let primaryBronze = UIColor(red: 0.9, green: 0.5, blue: 0.2, alpha: 1.0)
-        static let secondaryAqua = UIColor(red: 0.3, green: 0.6, blue: 0.8, alpha: 1.0)
-        static let tertiaryEmerald = UIColor(red: 0.4, green: 0.7, blue: 0.4, alpha: 1.0)
-        static let quaternaryViolet = UIColor(red: 0.7, green: 0.5, blue: 0.8, alpha: 1.0)
-        static let warningCrimson = UIColor(red: 0.9, green: 0.3, blue: 0.3, alpha: 1.0)
-        static let successVerdant = UIColor(red: 0.2, green: 1.0, blue: 0.4, alpha: 1.0)
-        static let neutralIvory = UIColor(red: 0.95, green: 0.93, blue: 0.88, alpha: 1.0)
-        static let shadowObsidian = UIColor(red: 0.6, green: 0.3, blue: 0.2, alpha: 1.0)
-        static let overlayUmber = UIColor.black.withAlphaComponent(0.4)
-        static let dimGray = UIColor(red: 0.7, green: 0.7, blue: 0.7, alpha: 1.0)
+        // Warna lama
+        static let warnaBronzPrimer = UIColor(red: 0.9, green: 0.5, blue: 0.2, alpha: 1.0)
+        static let warnaAkuaSekunder = UIColor(red: 0.3, green: 0.6, blue: 0.8, alpha: 1.0)
+        static let warnaEmeraldTertier = UIColor(red: 0.4, green: 0.7, blue: 0.4, alpha: 1.0)
+        static let warnaVioletKuaternari = UIColor(red: 0.7, green: 0.5, blue: 0.8, alpha: 1.0)
+        static let warnaKrimsonAmaran = UIColor(red: 0.9, green: 0.3, blue: 0.3, alpha: 1.0)
+        static let warnaHijauKejayaan = UIColor(red: 0.2, green: 1.0, blue: 0.4, alpha: 1.0)
+        static let warnaGadingNeutral = UIColor(red: 0.95, green: 0.93, blue: 0.88, alpha: 1.0)
+        static let warnaBatuhitamBayang = UIColor(red: 0.6, green: 0.3, blue: 0.2, alpha: 1.0)
+        static let warnaLapisanCoklat = UIColor.black.withAlphaComponent(0.4)
+        static let warnaKelabuSuram = UIColor(red: 0.7, green: 0.7, blue: 0.7, alpha: 1.0)
     }
     
-    // Backward compatibility - LayoutMetrics
-    struct LayoutMetrics {
-        static var gridSpacing: CGFloat { ArcaneConfiguration.layoutMetrics.gridSpacing }
-        static var cornerRadius: CGFloat { ArcaneConfiguration.layoutMetrics.cornerRadius }
-        static var shadowOpacity: Float { ArcaneConfiguration.layoutMetrics.shadowOpacity }
-        static var shadowRadius: CGFloat { ArcaneConfiguration.layoutMetrics.shadowRadius }
-        static var shadowOffset: CGSize { ArcaneConfiguration.layoutMetrics.shadowOffset }
-        static var buttonHeight: CGFloat { ArcaneConfiguration.layoutMetrics.buttonHeight }
-        static var standardPadding: CGFloat { ArcaneConfiguration.layoutMetrics.standardPadding }
-        static var glassCornerRadius: CGFloat { ArcaneConfiguration.layoutMetrics.glassCornerRadius }
-        static var neonGlowRadius: CGFloat { ArcaneConfiguration.layoutMetrics.neonGlowRadius }
-        static var neonGlowOpacity: Float { ArcaneConfiguration.layoutMetrics.neonGlowOpacity }
-        static var buttonWidth: CGFloat { ArcaneConfiguration.layoutMetrics.buttonWidth }
-        static var largeButtonHeight: CGFloat { ArcaneConfiguration.layoutMetrics.largeButtonHeight }
-        static var regularButtonHeight: CGFloat { ArcaneConfiguration.layoutMetrics.regularButtonHeight }
+    // Keserasian ke belakang - MetrikSusunAtur
+    struct MetrikSusunAtur {
+        static var jarakGrid: CGFloat { KonfigurasiRahsia.metrikSusunAtur.jarakGrid }
+        static var jejariSudut: CGFloat { KonfigurasiRahsia.metrikSusunAtur.jejariSudut }
+        static var kelegumanBayang: Float { KonfigurasiRahsia.metrikSusunAtur.kelegumanBayang }
+        static var jejarieBayang: CGFloat { KonfigurasiRahsia.metrikSusunAtur.jejarieBayang }
+        static var ofsetBayang: CGSize { KonfigurasiRahsia.metrikSusunAtur.ofsetBayang }
+        static var tinggiButang: CGFloat { KonfigurasiRahsia.metrikSusunAtur.tinggiButang }
+        static var pelapisanPiawai: CGFloat { KonfigurasiRahsia.metrikSusunAtur.pelapisanPiawai }
+        static var jejariSudutKaca: CGFloat { KonfigurasiRahsia.metrikSusunAtur.jejariSudutKaca }
+        static var jejariCahayaNeon: CGFloat { KonfigurasiRahsia.metrikSusunAtur.jejariCahayaNeon }
+        static var kelegumanCahayaNeon: Float { KonfigurasiRahsia.metrikSusunAtur.kelegumanCahayaNeon }
+        static var lebarButang: CGFloat { KonfigurasiRahsia.metrikSusunAtur.lebarButang }
+        static var tinggiButangBesar: CGFloat { KonfigurasiRahsia.metrikSusunAtur.tinggiButangBesar }
+        static var tinggiButangBiasa: CGFloat { KonfigurasiRahsia.metrikSusunAtur.tinggiButangBiasa }
     }
     
-    // Backward compatibility - AnimationDurations
-    struct AnimationDurations {
-        static var matchDelay: TimeInterval { ArcaneConfiguration.animationDurations.matchDelay }
-        static var colorFlash: TimeInterval { ArcaneConfiguration.animationDurations.colorFlash }
-        static var dialogAppear: TimeInterval { ArcaneConfiguration.animationDurations.dialogAppear }
-        static var dialogDismiss: TimeInterval { ArcaneConfiguration.animationDurations.dialogDismiss }
+    // Keserasian ke belakang - TempoAnimasi
+    struct TempoAnimasi {
+        static var kelewatanPadanan: TimeInterval { KonfigurasiRahsia.tempoAnimasi.kelewatanPadanan }
+        static var denyutanWarna: TimeInterval { KonfigurasiRahsia.tempoAnimasi.denyutanWarna }
+        static var kemunculanDialog: TimeInterval { KonfigurasiRahsia.tempoAnimasi.kemunculanDialog }
+        static var penutupanDialog: TimeInterval { KonfigurasiRahsia.tempoAnimasi.penutupanDialog }
     }
     
-    // Backward compatibility - GameParameters
-    struct GameParameters {
-        static var timeBonus: Int { ArcaneConfiguration.gameParameters.timeBonus }
-        static var leaderboardLimit: Int { ArcaneConfiguration.gameParameters.leaderboardLimit }
+    // Keserasian ke belakang - ParameterPermainan
+    struct ParameterPermainan {
+        static var bonusMasa: Int { KonfigurasiRahsia.parameterPermainan.bonusMasa }
+        static var hadPapanKedudukan: Int { KonfigurasiRahsia.parameterPermainan.hadPapanKedudukan }
     }
 }
 
-// MARK: - Resource Provider Protocol
+// MARK: - Protokol Penyedia Sumber
 
-protocol ArcaneResourceProvider {
-    func obtainBackgroundTexture() -> UIImage?
-    func obtainCardTexture(for identifier: String) -> UIImage?
-    func obtainReverseTexture() -> UIImage?
+protocol PenyediaSumberRahsia {
+    func dapatkanTeksturLatarBelakang() -> UIImage?
+    func dapatkanTeksturKad(untuk pengecam: String) -> UIImage?
+    func dapatkanTeksturTerbalik() -> UIImage?
 }
 
-class StandardResourceProvider: ArcaneResourceProvider {
-    func obtainBackgroundTexture() -> UIImage? {
-        return UIImage(named: "tenflip")
+class PelaksanaanPenyediaSumberPiawai: PenyediaSumberRahsia {
+    func dapatkanTeksturLatarBelakang() -> UIImage? {
+        return muatImej(namaImej: "tenflip")
     }
     
-    func obtainCardTexture(for identifier: String) -> UIImage? {
-        return UIImage(named: identifier)
+    func dapatkanTeksturKad(untuk pengecam: String) -> UIImage? {
+        return muatImej(namaImej: pengecam)
     }
     
-    func obtainReverseTexture() -> UIImage? {
-        return UIImage(named: "beimian")
+    func dapatkanTeksturTerbalik() -> UIImage? {
+        return muatImej(namaImej: "beimian")
+    }
+    
+    private func muatImej(namaImej: String) -> UIImage? {
+        return UIImage(named: namaImej)
     }
 }

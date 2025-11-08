@@ -2,54 +2,54 @@
 
 import UIKit
 
-protocol OpinionValidator {
-    func validate(_ content: String) -> Bool
-    func validationMessage() -> String
+protocol PengesahPendapat {
+    func sahkan(_ kandungan: String) -> Bool
+    func mesejPengesahan() -> String
 }
 
-class StandardOpinionValidator: OpinionValidator {
-    func validate(_ content: String) -> Bool {
-        return !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+class PengesahPendapatPiawai: PengesahPendapat {
+    func sahkan(_ kandungan: String) -> Bool {
+        return !kandungan.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
     
-    func validationMessage() -> String {
+    func mesejPengesahan() -> String {
         return "Please enter your feedback before submitting."
     }
 }
 
-class UndrhusOpinionPortal: UIViewController {
+class PortalPendapatTerpilih: UIViewController {
     
-    private let validator: OpinionValidator = StandardOpinionValidator()
-    private let resourceProvider = StandardResourceProvider()
+    private let pengesah: PengesahPendapat = PengesahPendapatPiawai()
+    private let penyediaSumber = PelaksanaanPenyediaSumberPiawai()
     
-    private lazy var backgroundTexture: UIImageView = {
+    private lazy var teksturLatar: UIImageView = {
         let iv = UIImageView()
-        iv.image = resourceProvider.obtainBackgroundTexture()
+        iv.image = penyediaSumber.dapatkanTeksturLatarBelakang()
         iv.contentMode = .scaleAspectFill
         iv.translatesAutoresizingMaskIntoConstraints = false
         return iv
     }()
     
-    private lazy var dimmerOverlay: UIView = {
+    private lazy var lapisanKelam: UIView = {
         let v = UIView()
         v.backgroundColor = UIColor.black.withAlphaComponent(0.5)
         v.translatesAutoresizingMaskIntoConstraints = false
         return v
     }()
     
-    private lazy var scrollContainer: UIScrollView = {
+    private lazy var bekasSkrol: UIScrollView = {
         let sv = UIScrollView()
         sv.translatesAutoresizingMaskIntoConstraints = false
         return sv
     }()
     
-    private lazy var contentArea: UIView = {
+    private lazy var kawasanKandungan: UIView = {
         let v = UIView()
         v.translatesAutoresizingMaskIntoConstraints = false
         return v
     }()
     
-    private lazy var retreatButton: UIButton = {
+    private lazy var butangUndur: UIButton = {
         let btn = UIButton(type: .system)
         btn.setTitle("← Back", for: .normal)
         btn.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
@@ -58,11 +58,11 @@ class UndrhusOpinionPortal: UIViewController {
         btn.layer.cornerRadius = 20
         btn.contentEdgeInsets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
         btn.translatesAutoresizingMaskIntoConstraints = false
-        btn.addTarget(self, action: #selector(dismissView), for: .touchUpInside)
+        btn.addTarget(self, action: #selector(tutupPaparan), for: .touchUpInside)
         return btn
     }()
     
-    private lazy var titleLabel: UILabel = {
+    private lazy var labelTajuk: UILabel = {
         let lbl = UILabel()
         lbl.text = "Feedback"
         lbl.font = UIFont.systemFont(ofSize: 28, weight: .bold)
@@ -74,7 +74,7 @@ class UndrhusOpinionPortal: UIViewController {
         return lbl
     }()
     
-    private lazy var descriptionLabel: UILabel = {
+    private lazy var labelPenerangan: UILabel = {
         let lbl = UILabel()
         lbl.text = "We value your feedback! Please share your thoughts, suggestions, or report any issues."
         lbl.font = UIFont.systemFont(ofSize: 16, weight: .regular)
@@ -87,21 +87,21 @@ class UndrhusOpinionPortal: UIViewController {
         return lbl
     }()
     
-    private lazy var opinionField: UITextView = {
+    private lazy var medanPendapat: UITextView = {
         let tv = UITextView()
         tv.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         tv.textColor = .black
-        tv.backgroundColor = ArcaneConfiguration.ColorPalette.neutralIvory.withAlphaComponent(0.95)
-        tv.layer.cornerRadius = ArcaneConfiguration.LayoutMetrics.cornerRadius
+        tv.backgroundColor = KonfigurasiRahsia.PaletWarna.warnaGadingNeutral.withAlphaComponent(0.95)
+        tv.layer.cornerRadius = KonfigurasiRahsia.MetrikSusunAtur.jejariSudut
         tv.layer.borderWidth = 2
-        tv.layer.borderColor = ArcaneConfiguration.ColorPalette.shadowObsidian.cgColor
+        tv.layer.borderColor = KonfigurasiRahsia.PaletWarna.warnaBatuhitamBayang.cgColor
         tv.textContainerInset = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
         tv.delegate = self
         tv.translatesAutoresizingMaskIntoConstraints = false
         return tv
     }()
     
-    private lazy var placeholderText: UILabel = {
+    private lazy var teksPlaceholder: UILabel = {
         let lbl = UILabel()
         lbl.text = "Enter your feedback here..."
         lbl.font = UIFont.systemFont(ofSize: 16, weight: .regular)
@@ -110,27 +110,27 @@ class UndrhusOpinionPortal: UIViewController {
         return lbl
     }()
     
-    private lazy var transmitButton: UIButton = {
+    private lazy var butangHantar: UIButton = {
         let btn = UIButton(type: .system)
         btn.setTitle("Submit", for: .normal)
         btn.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .bold)
-        btn.backgroundColor = ArcaneConfiguration.ColorPalette.primaryBronze
+        btn.backgroundColor = KonfigurasiRahsia.PaletWarna.warnaBronzPrimer
         btn.setTitleColor(.white, for: .normal)
-        btn.layer.cornerRadius = ArcaneConfiguration.LayoutMetrics.cornerRadius
+        btn.layer.cornerRadius = KonfigurasiRahsia.MetrikSusunAtur.jejariSudut
         btn.layer.shadowColor = UIColor.black.cgColor
-        btn.layer.shadowOffset = ArcaneConfiguration.LayoutMetrics.shadowOffset
-        btn.layer.shadowOpacity = ArcaneConfiguration.LayoutMetrics.shadowOpacity
-        btn.layer.shadowRadius = ArcaneConfiguration.LayoutMetrics.shadowRadius
+        btn.layer.shadowOffset = KonfigurasiRahsia.MetrikSusunAtur.ofsetBayang
+        btn.layer.shadowOpacity = KonfigurasiRahsia.MetrikSusunAtur.kelegumanBayang
+        btn.layer.shadowRadius = KonfigurasiRahsia.MetrikSusunAtur.jejarieBayang
         btn.translatesAutoresizingMaskIntoConstraints = false
-        btn.addTarget(self, action: #selector(transmitOpinion), for: .touchUpInside)
+        btn.addTarget(self, action: #selector(hantarPendapat), for: .touchUpInside)
         return btn
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        assembleInterface()
-        establishKeyboardHandlers()
-        establishTapRecognizer()
+        rakaikanAntaraMuka()
+        tubuhkanPengendalPapanKekunci()
+        tubuhkanPengecamKetukan()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -144,166 +144,165 @@ class UndrhusOpinionPortal: UIViewController {
         navigationController?.setNavigationBarHidden(false, animated: animated)
     }
     
-    private func assembleInterface() {
-        view.addSubview(backgroundTexture)
-        view.addSubview(dimmerOverlay)
-        view.addSubview(scrollContainer)
-        scrollContainer.addSubview(contentArea)
+    private func rakaikanAntaraMuka() {
+        view.addSubview(teksturLatar)
+        view.addSubview(lapisanKelam)
+        view.addSubview(bekasSkrol)
+        bekasSkrol.addSubview(kawasanKandungan)
         
-        contentArea.addSubview(titleLabel)
-        contentArea.addSubview(descriptionLabel)
-        contentArea.addSubview(opinionField)
-        opinionField.addSubview(placeholderText)
-        contentArea.addSubview(transmitButton)
+        kawasanKandungan.addSubview(labelTajuk)
+        kawasanKandungan.addSubview(labelPenerangan)
+        kawasanKandungan.addSubview(medanPendapat)
+        medanPendapat.addSubview(teksPlaceholder)
+        kawasanKandungan.addSubview(butangHantar)
         
-        view.addSubview(retreatButton)
+        view.addSubview(butangUndur)
         
         NSLayoutConstraint.activate([
-            backgroundTexture.topAnchor.constraint(equalTo: view.topAnchor),
-            backgroundTexture.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            backgroundTexture.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            backgroundTexture.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            teksturLatar.topAnchor.constraint(equalTo: view.topAnchor),
+            teksturLatar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            teksturLatar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            teksturLatar.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            dimmerOverlay.topAnchor.constraint(equalTo: view.topAnchor),
-            dimmerOverlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            dimmerOverlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            dimmerOverlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            lapisanKelam.topAnchor.constraint(equalTo: view.topAnchor),
+            lapisanKelam.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            lapisanKelam.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            lapisanKelam.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            scrollContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollContainer.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            bekasSkrol.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            bekasSkrol.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            bekasSkrol.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            bekasSkrol.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            contentArea.topAnchor.constraint(equalTo: scrollContainer.topAnchor),
-            contentArea.leadingAnchor.constraint(equalTo: scrollContainer.leadingAnchor),
-            contentArea.trailingAnchor.constraint(equalTo: scrollContainer.trailingAnchor),
-            contentArea.bottomAnchor.constraint(equalTo: scrollContainer.bottomAnchor),
-            contentArea.widthAnchor.constraint(equalTo: scrollContainer.widthAnchor),
+            kawasanKandungan.topAnchor.constraint(equalTo: bekasSkrol.topAnchor),
+            kawasanKandungan.leadingAnchor.constraint(equalTo: bekasSkrol.leadingAnchor),
+            kawasanKandungan.trailingAnchor.constraint(equalTo: bekasSkrol.trailingAnchor),
+            kawasanKandungan.bottomAnchor.constraint(equalTo: bekasSkrol.bottomAnchor),
+            kawasanKandungan.widthAnchor.constraint(equalTo: bekasSkrol.widthAnchor),
             
-            titleLabel.topAnchor.constraint(equalTo: contentArea.topAnchor, constant: 20),
-            titleLabel.leadingAnchor.constraint(equalTo: contentArea.leadingAnchor, constant: 20),
-            titleLabel.trailingAnchor.constraint(equalTo: contentArea.trailingAnchor, constant: -20),
+            labelTajuk.topAnchor.constraint(equalTo: kawasanKandungan.topAnchor, constant: 20),
+            labelTajuk.leadingAnchor.constraint(equalTo: kawasanKandungan.leadingAnchor, constant: 20),
+            labelTajuk.trailingAnchor.constraint(equalTo: kawasanKandungan.trailingAnchor, constant: -20),
             
-            descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 16),
-            descriptionLabel.leadingAnchor.constraint(equalTo: contentArea.leadingAnchor, constant: 30),
-            descriptionLabel.trailingAnchor.constraint(equalTo: contentArea.trailingAnchor, constant: -30),
+            labelPenerangan.topAnchor.constraint(equalTo: labelTajuk.bottomAnchor, constant: 16),
+            labelPenerangan.leadingAnchor.constraint(equalTo: kawasanKandungan.leadingAnchor, constant: 30),
+            labelPenerangan.trailingAnchor.constraint(equalTo: kawasanKandungan.trailingAnchor, constant: -30),
             
-            opinionField.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 30),
-            opinionField.leadingAnchor.constraint(equalTo: contentArea.leadingAnchor, constant: 20),
-            opinionField.trailingAnchor.constraint(equalTo: contentArea.trailingAnchor, constant: -20),
-            opinionField.heightAnchor.constraint(equalToConstant: 200),
+            medanPendapat.topAnchor.constraint(equalTo: labelPenerangan.bottomAnchor, constant: 30),
+            medanPendapat.leadingAnchor.constraint(equalTo: kawasanKandungan.leadingAnchor, constant: 20),
+            medanPendapat.trailingAnchor.constraint(equalTo: kawasanKandungan.trailingAnchor, constant: -20),
+            medanPendapat.heightAnchor.constraint(equalToConstant: 200),
             
-            placeholderText.topAnchor.constraint(equalTo: opinionField.topAnchor, constant: 12),
-            placeholderText.leadingAnchor.constraint(equalTo: opinionField.leadingAnchor, constant: 16),
-            placeholderText.trailingAnchor.constraint(equalTo: opinionField.trailingAnchor, constant: -16),
+            teksPlaceholder.topAnchor.constraint(equalTo: medanPendapat.topAnchor, constant: 12),
+            teksPlaceholder.leadingAnchor.constraint(equalTo: medanPendapat.leadingAnchor, constant: 16),
+            teksPlaceholder.trailingAnchor.constraint(equalTo: medanPendapat.trailingAnchor, constant: -16),
             
-            transmitButton.topAnchor.constraint(equalTo: opinionField.bottomAnchor, constant: 30),
-            transmitButton.centerXAnchor.constraint(equalTo: contentArea.centerXAnchor),
-            transmitButton.widthAnchor.constraint(equalToConstant: 200),
-            transmitButton.heightAnchor.constraint(equalToConstant: ArcaneConfiguration.LayoutMetrics.buttonHeight),
-            transmitButton.bottomAnchor.constraint(equalTo: contentArea.bottomAnchor, constant: -40),
+            butangHantar.topAnchor.constraint(equalTo: medanPendapat.bottomAnchor, constant: 30),
+            butangHantar.centerXAnchor.constraint(equalTo: kawasanKandungan.centerXAnchor),
+            butangHantar.widthAnchor.constraint(equalToConstant: 200),
+            butangHantar.heightAnchor.constraint(equalToConstant: KonfigurasiRahsia.MetrikSusunAtur.tinggiButang),
+            butangHantar.bottomAnchor.constraint(equalTo: kawasanKandungan.bottomAnchor, constant: -40),
             
-            retreatButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
-            retreatButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16)
+            butangUndur.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            butangUndur.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16)
         ])
     }
     
-    private func establishKeyboardHandlers() {
+    private func tubuhkanPengendalPapanKekunci() {
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(keyboardWillEmerge),
+            selector: #selector(papanKekunciAkanMuncul),
             name: UIResponder.keyboardWillShowNotification,
             object: nil
         )
         
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(keyboardWillRecede),
+            selector: #selector(papanKekunciAkanHilang),
             name: UIResponder.keyboardWillHideNotification,
             object: nil
         )
     }
     
-    private func establishTapRecognizer() {
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-        tapGesture.cancelsTouchesInView = false
-        view.addGestureRecognizer(tapGesture)
+    private func tubuhkanPengecamKetukan() {
+        let gerakKetukan = UITapGestureRecognizer(target: self, action: #selector(tutupPapanKekunci))
+        gerakKetukan.cancelsTouchesInView = false
+        view.addGestureRecognizer(gerakKetukan)
     }
     
-    @objc private func dismissView() {
+    @objc private func tutupPaparan() {
         navigationController?.popViewController(animated: true)
     }
     
-    @objc private func dismissKeyboard() {
+    @objc private func tutupPapanKekunci() {
         view.endEditing(true)
     }
     
-    @objc private func keyboardWillEmerge(notification: NSNotification) {
-        guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
-        let inset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardFrame.height, right: 0)
-        scrollContainer.contentInset = inset
-        scrollContainer.scrollIndicatorInsets = inset
+    @objc private func papanKekunciAkanMuncul(pemberitahuan: NSNotification) {
+        guard let kerangkaPapanKekunci = pemberitahuan.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+        let inset = UIEdgeInsets(top: 0, left: 0, bottom: kerangkaPapanKekunci.height, right: 0)
+        bekasSkrol.contentInset = inset
+        bekasSkrol.scrollIndicatorInsets = inset
     }
     
-    @objc private func keyboardWillRecede(notification: NSNotification) {
-        scrollContainer.contentInset = .zero
-        scrollContainer.scrollIndicatorInsets = .zero
+    @objc private func papanKekunciAkanHilang(pemberitahuan: NSNotification) {
+        bekasSkrol.contentInset = .zero
+        bekasSkrol.scrollIndicatorInsets = .zero
     }
     
-    @objc private func transmitOpinion() {
-        let content = opinionField.text.trimmingCharacters(in: .whitespacesAndNewlines)
+    @objc private func hantarPendapat() {
+        let kandungan = medanPendapat.text.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        if !validator.validate(content) {
-            displayValidationError()
+        if !pengesah.sahkan(kandungan) {
+            paparkanRalaatPengesahan()
             return
         }
         
-        AncientVaultKeeper.shared.saveFeedbackEntry(content)
-        displaySuccessConfirmation()
+        PenjagaVault.dikongsi.simpanentriMaklumBalas(kandungan)
+        paparkanPengesahanKejayaan()
     }
     
-    private func displayValidationError() {
-        let portal = LuminousDialogPortal()
-        let actions = [
-            DialogAction(title: "OK", style: .primary, handler: nil)
+    private func paparkanRalaatPengesahan() {
+        let portal = PortalDialogBercahaya()
+        let tindakanSenarai = [
+            TindakanDialog(tajuk: "OK", gaya: .primer, pengendali: nil)
         ]
-        portal.manifestWithConfiguration(
-            title: "Empty Feedback",
-            message: validator.validationMessage(),
-            actions: actions
+        portal.tampilkanDenganKonfigurasi(
+            tajuk: "Empty Feedback",
+            mesej: pengesah.mesejPengesahan(),
+            tindakan: tindakanSenarai
         )
     }
     
-    private func displaySuccessConfirmation() {
-        let portal = LuminousDialogPortal()
-        let actions = [
-            DialogAction(title: "OK", style: .primary) { [weak self] in
+    private func paparkanPengesahanKejayaan() {
+        let portal = PortalDialogBercahaya()
+        let tindakanSenarai = [
+            TindakanDialog(tajuk: "OK", gaya: .primer) { [weak self] in
                 self?.navigationController?.popViewController(animated: true)
             }
         ]
-        portal.manifestWithConfiguration(
-            title: "Thank You!",
-            message: "Your feedback has been submitted successfully.",
-            actions: actions
+        portal.tampilkanDenganKonfigurasi(
+            tajuk: "Thank You!",
+            mesej: "Your feedback has been submitted successfully.",
+            tindakan: tindakanSenarai
         )
         
-        opinionField.text = ""
-        placeholderText.isHidden = false
+        medanPendapat.text = ""
+        teksPlaceholder.isHidden = false
     }
 }
 
-extension UndrhusOpinionPortal: UITextViewDelegate {
+extension PortalPendapatTerpilih: UITextViewDelegate {
     
     func textViewDidChange(_ textView: UITextView) {
-        placeholderText.isHidden = !textView.text.isEmpty
+        teksPlaceholder.isHidden = !textView.text.isEmpty
     }
     
     func textViewDidBeginEditing(_ textView: UITextView) {
-        placeholderText.isHidden = !textView.text.isEmpty
+        teksPlaceholder.isHidden = !textView.text.isEmpty
     }
     
     func textViewDidEndEditing(_ textView: UITextView) {
-        placeholderText.isHidden = !textView.text.isEmpty
+        teksPlaceholder.isHidden = !textView.text.isEmpty
     }
 }
-

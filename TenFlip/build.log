@@ -1,0 +1,38 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -workspace TenFlip.xcworkspace -scheme TenFlip -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 15" clean build
+
+Build settings from command line:
+    SDKROOT = iphonesimulator18.4
+
+2025-11-08 11:02:30.738 xcodebuild[66416:12280975] Writing error result bundle to /var/folders/1w/02hpzkx94_q8kcx5gwzz09rr0000gn/T/ResultBundle_2025-08-11_11-02-0030.xcresult
+xcodebuild: error: Unable to find a device matching the provided destination specifier:
+		{ platform:iOS Simulator, OS:latest, name:iPhone 15 }
+
+	The requested device could not be found because no available devices matched the request.
+
+	Available destinations for the "TenFlip" scheme:
+		{ platform:iOS, arch:arm64, id:00008030-001E682C2221802E, name:Hades iPhone }
+		{ platform:iOS, id:dvtdevice-DVTiPhonePlaceholder-iphoneos:placeholder, name:Any iOS Device }
+		{ platform:iOS Simulator, id:dvtdevice-DVTiOSDeviceSimulatorPlaceholder-iphonesimulator:placeholder, name:Any iOS Simulator Device }
+		{ platform:iOS Simulator, arch:arm64, id:B1E1AA18-A6EA-4222-9080-BB54FF567AC4, OS:18.4, name:iPad (A16) }
+		{ platform:iOS Simulator, arch:x86_64, id:B1E1AA18-A6EA-4222-9080-BB54FF567AC4, OS:18.4, name:iPad (A16) }
+		{ platform:iOS Simulator, arch:arm64, id:1DB772B6-C21C-4CB7-8997-C45B01079028, OS:18.4, name:iPad Air 11-inch (M3) }
+		{ platform:iOS Simulator, arch:x86_64, id:1DB772B6-C21C-4CB7-8997-C45B01079028, OS:18.4, name:iPad Air 11-inch (M3) }
+		{ platform:iOS Simulator, arch:arm64, id:330671CB-BADE-4F77-B52B-C9104443F84E, OS:18.4, name:iPad Air 13-inch (M3) }
+		{ platform:iOS Simulator, arch:x86_64, id:330671CB-BADE-4F77-B52B-C9104443F84E, OS:18.4, name:iPad Air 13-inch (M3) }
+		{ platform:iOS Simulator, arch:arm64, id:BC0CEB6A-74AD-48E8-8E25-BB79CA893C69, OS:18.4, name:iPad Pro 11-inch (M4) }
+		{ platform:iOS Simulator, arch:x86_64, id:BC0CEB6A-74AD-48E8-8E25-BB79CA893C69, OS:18.4, name:iPad Pro 11-inch (M4) }
+		{ platform:iOS Simulator, arch:arm64, id:457148B8-48CA-4973-A23D-CDE90813AEC7, OS:18.4, name:iPad Pro 13-inch (M4) }
+		{ platform:iOS Simulator, arch:x86_64, id:457148B8-48CA-4973-A23D-CDE90813AEC7, OS:18.4, name:iPad Pro 13-inch (M4) }
+		{ platform:iOS Simulator, arch:arm64, id:30979CD6-28A5-4C97-8BC8-3E808C56789B, OS:18.4, name:iPad mini (A17 Pro) }
+		{ platform:iOS Simulator, arch:x86_64, id:30979CD6-28A5-4C97-8BC8-3E808C56789B, OS:18.4, name:iPad mini (A17 Pro) }
+		{ platform:iOS Simulator, arch:arm64, id:1A82FA70-5BD0-48FA-87F8-473A74AF681B, OS:18.4, name:iPhone 16 }
+		{ platform:iOS Simulator, arch:x86_64, id:1A82FA70-5BD0-48FA-87F8-473A74AF681B, OS:18.4, name:iPhone 16 }
+		{ platform:iOS Simulator, arch:arm64, id:6DC60D82-68EC-4D78-A2E0-4D5BFCAF931D, OS:18.4, name:iPhone 16 Plus }
+		{ platform:iOS Simulator, arch:x86_64, id:6DC60D82-68EC-4D78-A2E0-4D5BFCAF931D, OS:18.4, name:iPhone 16 Plus }
+		{ platform:iOS Simulator, arch:arm64, id:B639FE19-DED5-46FF-9A59-3F859216CCA5, OS:18.4, name:iPhone 16 Pro }
+		{ platform:iOS Simulator, arch:x86_64, id:B639FE19-DED5-46FF-9A59-3F859216CCA5, OS:18.4, name:iPhone 16 Pro }
+		{ platform:iOS Simulator, arch:arm64, id:A8B31224-1B6B-4EEC-987A-A7D27FBD1C5D, OS:18.4, name:iPhone 16 Pro Max }
+		{ platform:iOS Simulator, arch:x86_64, id:A8B31224-1B6B-4EEC-987A-A7D27FBD1C5D, OS:18.4, name:iPhone 16 Pro Max }
+		{ platform:iOS Simulator, arch:arm64, id:EA5D2991-D89D-4143-B8E4-AEEA4901213A, OS:18.4, name:iPhone 16e }
+		{ platform:iOS Simulator, arch:x86_64, id:EA5D2991-D89D-4143-B8E4-AEEA4901213A, OS:18.4, name:iPhone 16e }

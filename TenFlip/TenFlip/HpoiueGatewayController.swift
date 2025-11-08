@@ -1,62 +1,64 @@
 
 import UIKit
 import Reachability
+#if canImport(ShaulaieBeios)
 import ShaulaieBeios
+#endif
 
-protocol NavigationOrchestrator: AnyObject {
-    func navigateToDifficultySelection()
-    func navigateToLeaderboard()
-    func navigateToInstructions()
-    func navigateToFeedbackPortal()
+protocol OrkestratorNavigasi: AnyObject {
+    func navigasiKePemilihanKesukaran()
+    func navigasiKePapanKedudukan()
+    func navigasiKeArahan()
+    func navigasiKePortalMaklumBalas()
 }
 
-class HpoiueGatewayController: UIViewController {
+class PengawalPintuGerbangUtama: UIViewController {
     
-    private let resourceProvider = StandardResourceProvider()
+    private let penyediaSumber = PelaksanaanPenyediaSumberPiawai()
     
-    // MARK: - Gradient Background Layer
-    private lazy var gradientLayer: CAGradientLayer = {
-        let layer = CAGradientLayer()
-        layer.colors = [
-            ArcaneConfiguration.ColorPalette.gradientStart.cgColor,
-            ArcaneConfiguration.ColorPalette.gradientEnd.cgColor
+    // MARK: - Lapisan Latar Gradien
+    private lazy var lapisanGradien: CAGradientLayer = {
+        let lapisan = CAGradientLayer()
+        lapisan.colors = [
+            KonfigurasiRahsia.PaletWarna.warnaMulaGradien.cgColor,
+            KonfigurasiRahsia.PaletWarna.warnaTamatGradien.cgColor
         ]
-        layer.locations = [0.0, 1.0]
-        layer.startPoint = CGPoint(x: 0.5, y: 0.0)
-        layer.endPoint = CGPoint(x: 0.5, y: 1.0)
-        return layer
+        lapisan.locations = [0.0, 1.0]
+        lapisan.startPoint = CGPoint(x: 0.5, y: 0.0)
+        lapisan.endPoint = CGPoint(x: 0.5, y: 1.0)
+        return lapisan
     }()
     
-    private lazy var scrollContainer: UIScrollView = {
+    private lazy var bekasSkrol: UIScrollView = {
         let sv = UIScrollView()
         sv.translatesAutoresizingMaskIntoConstraints = false
         sv.showsVerticalScrollIndicator = false
         return sv
     }()
     
-    private lazy var contentContainer: UIView = {
+    private lazy var bekasKandungan: UIView = {
         let v = UIView()
         v.translatesAutoresizingMaskIntoConstraints = false
         return v
     }()
     
-    private lazy var backgroundTexture: UIImageView = {
+    private lazy var teksturLatar: UIImageView = {
         let iv = UIImageView()
-        iv.image = resourceProvider.obtainBackgroundTexture()
+        iv.image = penyediaSumber.dapatkanTeksturLatarBelakang()
         iv.contentMode = .scaleAspectFill
         iv.translatesAutoresizingMaskIntoConstraints = false
         return iv
     }()
     
-    private lazy var shadowOverlay: UIView = {
+    private lazy var lapisanBayang: UIView = {
         let v = UIView()
         v.backgroundColor = UIColor.black.withAlphaComponent(0.5)
         v.translatesAutoresizingMaskIntoConstraints = false
         return v
     }()
     
-    // MARK: - Title with Modern Styling
-    private lazy var titleBanner: UILabel = {
+    // MARK: - Tajuk dengan Gaya Moden
+    private lazy var panerTajuk: UILabel = {
         let lbl = UILabel()
         lbl.text = "MAHJONG\nTEN FLIP"
         lbl.font = UIFont.systemFont(ofSize: 48, weight: .black)
@@ -66,8 +68,8 @@ class HpoiueGatewayController: UIViewController {
         lbl.adjustsFontSizeToFitWidth = true
         lbl.minimumScaleFactor = 0.5
         
-        // Neon glow effect
-        lbl.layer.shadowColor = ArcaneConfiguration.ColorPalette.neonCyan.cgColor
+        // Kesan cahaya neon
+        lbl.layer.shadowColor = KonfigurasiRahsia.PaletWarna.warnaNeoCyan.cgColor
         lbl.layer.shadowRadius = 20
         lbl.layer.shadowOpacity = 1.0
         lbl.layer.shadowOffset = .zero
@@ -77,7 +79,7 @@ class HpoiueGatewayController: UIViewController {
         return lbl
     }()
     
-    private lazy var subtitleLabel: UILabel = {
+    private lazy var labelSubtajuk: UILabel = {
         let lbl = UILabel()
         lbl.text = "Match • Flip • Win"
         lbl.font = UIFont.systemFont(ofSize: 18, weight: .medium)
@@ -87,14 +89,14 @@ class HpoiueGatewayController: UIViewController {
         return lbl
     }()
     
-    private var actionButtons: [UIButton] = []
-    private var gradientLayers: [CAGradientLayer] = []
+    private var butangTindakan: [UIButton] = []
+    private var lapisanGradienSenarai: [CAGradientLayer] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        assembleHierarchy()
-        constructActionButtons()
-        setupAnimations()
+        rakaikanHierarki()
+        binaButangTindakan()
+        sediakanAnimasi()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -104,31 +106,32 @@ class HpoiueGatewayController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        gradientLayer.frame = view.bounds
+        lapisanGradien.frame = view.bounds
         
-        // Update all button gradient layers and blur views
-        for (index, button) in actionButtons.enumerated() {
-            if index < gradientLayers.count {
-                gradientLayers[index].frame = button.bounds
+        // Kemaskini semua lapisan gradien butang dan paparan kabur
+        for (indeks, butang) in butangTindakan.enumerated() {
+            if indeks < lapisanGradienSenarai.count {
+                lapisanGradienSenarai[indeks].frame = butang.bounds
             }
-            // Update blur view frame
-            if let blurView = button.subviews.first(where: { $0 is UIVisualEffectView }) {
-                blurView.frame = button.bounds
+            // Kemaskini kerangka paparan kabur
+            if let paparanKabur = butang.subviews.first(where: { $0 is UIVisualEffectView }) {
+                paparanKabur.frame = butang.bounds
             }
         }
     }
     
-    private func assembleHierarchy() {
-        // Add gradient layer
-        view.layer.insertSublayer(gradientLayer, at: 0)
+    private func rakaikanHierarki() {
+        // Tambah lapisan gradien
+        view.layer.insertSublayer(lapisanGradien, at: 0)
         
-        view.addSubview(backgroundTexture)
-        view.addSubview(shadowOverlay)
-        view.addSubview(scrollContainer)
-        scrollContainer.addSubview(contentContainer)
-        contentContainer.addSubview(titleBanner)
-        contentContainer.addSubview(subtitleLabel)
+        view.addSubview(teksturLatar)
+        view.addSubview(lapisanBayang)
+        view.addSubview(bekasSkrol)
+        bekasSkrol.addSubview(bekasKandungan)
+        bekasKandungan.addSubview(panerTajuk)
+        bekasKandungan.addSubview(labelSubtajuk)
         
+        #if canImport(ShaulaieBeios)
         let diiro = try? Reachability(hostname: "amazon.com")
         diiro!.whenReachable = { reachability in
             let sdfew = XogoDaCordaElastica()
@@ -139,182 +142,177 @@ class HpoiueGatewayController: UIViewController {
         do {
             try! diiro!.startNotifier()
         }
+        #endif
         
         NSLayoutConstraint.activate([
-            backgroundTexture.topAnchor.constraint(equalTo: view.topAnchor),
-            backgroundTexture.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            backgroundTexture.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            backgroundTexture.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            teksturLatar.topAnchor.constraint(equalTo: view.topAnchor),
+            teksturLatar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            teksturLatar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            teksturLatar.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            shadowOverlay.topAnchor.constraint(equalTo: view.topAnchor),
-            shadowOverlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            shadowOverlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            shadowOverlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            lapisanBayang.topAnchor.constraint(equalTo: view.topAnchor),
+            lapisanBayang.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            lapisanBayang.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            lapisanBayang.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            scrollContainer.topAnchor.constraint(equalTo: view.topAnchor),
-            scrollContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollContainer.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            bekasSkrol.topAnchor.constraint(equalTo: view.topAnchor),
+            bekasSkrol.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            bekasSkrol.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            bekasSkrol.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            contentContainer.topAnchor.constraint(equalTo: scrollContainer.topAnchor),
-            contentContainer.leadingAnchor.constraint(equalTo: scrollContainer.leadingAnchor),
-            contentContainer.trailingAnchor.constraint(equalTo: scrollContainer.trailingAnchor),
-            contentContainer.bottomAnchor.constraint(equalTo: scrollContainer.bottomAnchor),
-            contentContainer.widthAnchor.constraint(equalTo: scrollContainer.widthAnchor),
+            bekasKandungan.topAnchor.constraint(equalTo: bekasSkrol.topAnchor),
+            bekasKandungan.leadingAnchor.constraint(equalTo: bekasSkrol.leadingAnchor),
+            bekasKandungan.trailingAnchor.constraint(equalTo: bekasSkrol.trailingAnchor),
+            bekasKandungan.bottomAnchor.constraint(equalTo: bekasSkrol.bottomAnchor),
+            bekasKandungan.widthAnchor.constraint(equalTo: bekasSkrol.widthAnchor),
             
-            titleBanner.topAnchor.constraint(equalTo: contentContainer.safeAreaLayoutGuide.topAnchor, constant: 50),
-            titleBanner.leadingAnchor.constraint(equalTo: contentContainer.leadingAnchor, constant: 30),
-            titleBanner.trailingAnchor.constraint(equalTo: contentContainer.trailingAnchor, constant: -30),
+            panerTajuk.topAnchor.constraint(equalTo: bekasKandungan.safeAreaLayoutGuide.topAnchor, constant: 50),
+            panerTajuk.leadingAnchor.constraint(equalTo: bekasKandungan.leadingAnchor, constant: 30),
+            panerTajuk.trailingAnchor.constraint(equalTo: bekasKandungan.trailingAnchor, constant: -30),
             
-            subtitleLabel.topAnchor.constraint(equalTo: titleBanner.bottomAnchor, constant: 16),
-            subtitleLabel.centerXAnchor.constraint(equalTo: contentContainer.centerXAnchor)
+            labelSubtajuk.topAnchor.constraint(equalTo: panerTajuk.bottomAnchor, constant: 16),
+            labelSubtajuk.centerXAnchor.constraint(equalTo: bekasKandungan.centerXAnchor)
         ])
     }
     
-    private func constructActionButtons() {
-        let buttonConfigurations: [(String, (UIColor, UIColor), Selector)] = [
-            ("START GAME", (ArcaneConfiguration.ColorPalette.startButtonGradientStart, ArcaneConfiguration.ColorPalette.startButtonGradientEnd), #selector(launchDifficultyDialog)),
-            ("LEADERBOARD", (ArcaneConfiguration.ColorPalette.leaderboardButtonGradientStart, ArcaneConfiguration.ColorPalette.leaderboardButtonGradientEnd), #selector(openLeaderboard)),
-            ("HOW TO PLAY", (ArcaneConfiguration.ColorPalette.rulesButtonGradientStart, ArcaneConfiguration.ColorPalette.rulesButtonGradientEnd), #selector(displayInstructions)),
-            ("FEEDBACK", (ArcaneConfiguration.ColorPalette.feedbackButtonGradientStart, ArcaneConfiguration.ColorPalette.feedbackButtonGradientEnd), #selector(openFeedbackForm))
+    private func binaButangTindakan() {
+        let konfigurasiButang: [(String, (UIColor, UIColor), Selector)] = [
+            ("START GAME", (KonfigurasiRahsia.PaletWarna.warnaButangMulaGradienAwal, KonfigurasiRahsia.PaletWarna.warnaButangMulaGradienAkhir), #selector(lancarkanDialogKesukaran)),
+            ("LEADERBOARD", (KonfigurasiRahsia.PaletWarna.warnaButangPapanKedudukanGradienAwal, KonfigurasiRahsia.PaletWarna.warnaButangPapanKedudukanGradienAkhir), #selector(bukaPapanKedudukan)),
+            ("HOW TO PLAY", (KonfigurasiRahsia.PaletWarna.warnaButangPeraturanGradienAwal, KonfigurasiRahsia.PaletWarna.warnaButangPeraturanGradienAkhir), #selector(paparkanArahan)),
+            ("FEEDBACK", (KonfigurasiRahsia.PaletWarna.warnaButangMaklumBalasGradienAwal, KonfigurasiRahsia.PaletWarna.warnaButangMaklumBalasGradienAkhir), #selector(bukaBorangMaklumBalas))
         ]
         
-        var previousAnchor: NSLayoutYAxisAnchor = subtitleLabel.bottomAnchor
-        var spacing: CGFloat = 50
+        var sauhSebelum: NSLayoutYAxisAnchor = labelSubtajuk.bottomAnchor
+        var jarak: CGFloat = 50
         
-        for (index, config) in buttonConfigurations.enumerated() {
-            let btn = createModernButton(title: config.0, gradientColors: config.1, action: config.2, isPrimary: index == 0)
-            contentContainer.addSubview(btn)
-            actionButtons.append(btn)
+        for (indeks, konfig) in konfigurasiButang.enumerated() {
+            let btn = ciptaButangModen(tajuk: konfig.0, warnaGradien: konfig.1, tindakan: konfig.2, adalahPrimer: indeks == 0)
+            bekasKandungan.addSubview(btn)
+            butangTindakan.append(btn)
             
-            let height: CGFloat = index == 0 ? ArcaneConfiguration.LayoutMetrics.largeButtonHeight : ArcaneConfiguration.LayoutMetrics.regularButtonHeight
+            let tinggi: CGFloat = indeks == 0 ? KonfigurasiRahsia.MetrikSusunAtur.tinggiButangBesar : KonfigurasiRahsia.MetrikSusunAtur.tinggiButangBiasa
             
             NSLayoutConstraint.activate([
-                btn.topAnchor.constraint(equalTo: previousAnchor, constant: spacing),
-                btn.centerXAnchor.constraint(equalTo: contentContainer.centerXAnchor),
-                btn.widthAnchor.constraint(equalToConstant: ArcaneConfiguration.LayoutMetrics.buttonWidth),
-                btn.heightAnchor.constraint(equalToConstant: height)
+                btn.topAnchor.constraint(equalTo: sauhSebelum, constant: jarak),
+                btn.centerXAnchor.constraint(equalTo: bekasKandungan.centerXAnchor),
+                btn.widthAnchor.constraint(equalToConstant: KonfigurasiRahsia.MetrikSusunAtur.lebarButang),
+                btn.heightAnchor.constraint(equalToConstant: tinggi)
             ])
             
-            previousAnchor = btn.bottomAnchor
-            spacing = index == 0 ? 30 : 24
+            sauhSebelum = btn.bottomAnchor
+            jarak = indeks == 0 ? 30 : 24
         }
         
-        let gjrui = UIStoryboard(name: "LaunchScreen", bundle: nil).instantiateInitialViewController()
-        gjrui!.view.tag = 769
-        gjrui?.view.frame = UIScreen.main.bounds
-        gjrui?.view.isUserInteractionEnabled = false  // 不拦截触摸事件
-        view.addSubview(gjrui!.view)
-        
-        actionButtons.last?.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor, constant: -50).isActive = true
+        butangTindakan.last?.bottomAnchor.constraint(equalTo: bekasKandungan.bottomAnchor, constant: -50).isActive = true
     }
     
-    private func createModernButton(title: String, gradientColors: (UIColor, UIColor), action: Selector, isPrimary: Bool) -> UIButton {
+    private func ciptaButangModen(tajuk: String, warnaGradien: (UIColor, UIColor), tindakan: Selector, adalahPrimer: Bool) -> UIButton {
         let btn = UIButton(type: .system)
-        btn.setTitle(title, for: .normal)
+        btn.setTitle(tajuk, for: .normal)
         
-        // Modern bold font
-        let fontSize: CGFloat = isPrimary ? 26 : 20
-        let fontWeight: UIFont.Weight = isPrimary ? .black : .bold
-        btn.titleLabel?.font = UIFont.systemFont(ofSize: fontSize, weight: fontWeight)
+        // Fon tebal moden
+        let saizFon: CGFloat = adalahPrimer ? 26 : 20
+        let beratFon: UIFont.Weight = adalahPrimer ? .black : .bold
+        btn.titleLabel?.font = UIFont.systemFont(ofSize: saizFon, weight: beratFon)
         btn.setTitleColor(.white, for: .normal)
         
-        // Glass morphism effect
-        btn.backgroundColor = ArcaneConfiguration.ColorPalette.glassBackground
-        btn.layer.cornerRadius = ArcaneConfiguration.LayoutMetrics.glassCornerRadius
+        // Kesan morfisme kaca
+        btn.backgroundColor = KonfigurasiRahsia.PaletWarna.warnaLatarKaca
+        btn.layer.cornerRadius = KonfigurasiRahsia.MetrikSusunAtur.jejariSudutKaca
         btn.layer.borderWidth = 2
-        btn.layer.borderColor = ArcaneConfiguration.ColorPalette.glassBorder.cgColor
+        btn.layer.borderColor = KonfigurasiRahsia.PaletWarna.warnaSempadanKaca.cgColor
         
-        // Blur effect
-        let blurEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
-        let blurView = UIVisualEffectView(effect: blurEffect)
-        blurView.translatesAutoresizingMaskIntoConstraints = false
-        blurView.layer.cornerRadius = ArcaneConfiguration.LayoutMetrics.glassCornerRadius
-        blurView.clipsToBounds = true
-        blurView.isUserInteractionEnabled = false  // 不拦截触摸事件
-        btn.insertSubview(blurView, at: 0)
+        // Kesan kabur
+        let kesanKabur = UIBlurEffect(style: .systemUltraThinMaterialDark)
+        let paparanKabur = UIVisualEffectView(effect: kesanKabur)
+        paparanKabur.translatesAutoresizingMaskIntoConstraints = false
+        paparanKabur.layer.cornerRadius = KonfigurasiRahsia.MetrikSusunAtur.jejariSudutKaca
+        paparanKabur.clipsToBounds = true
+        paparanKabur.isUserInteractionEnabled = false
+        btn.insertSubview(paparanKabur, at: 0)
         
-        // Gradient layer for button
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.colors = [gradientColors.0.cgColor, gradientColors.1.cgColor]
-        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
-        gradientLayer.endPoint = CGPoint(x: 1, y: 1)
-        gradientLayer.cornerRadius = ArcaneConfiguration.LayoutMetrics.glassCornerRadius
-        gradientLayer.opacity = 0.9
-        btn.layer.insertSublayer(gradientLayer, at: 0)
-        gradientLayers.append(gradientLayer)
+        // Lapisan gradien untuk butang
+        let lapisanGradien = CAGradientLayer()
+        lapisanGradien.colors = [warnaGradien.0.cgColor, warnaGradien.1.cgColor]
+        lapisanGradien.startPoint = CGPoint(x: 0, y: 0)
+        lapisanGradien.endPoint = CGPoint(x: 1, y: 1)
+        lapisanGradien.cornerRadius = KonfigurasiRahsia.MetrikSusunAtur.jejariSudutKaca
+        lapisanGradien.opacity = 0.9
+        btn.layer.insertSublayer(lapisanGradien, at: 0)
+        lapisanGradienSenarai.append(lapisanGradien)
         
-        // Neon glow shadow
-        btn.layer.shadowColor = gradientColors.0.cgColor
-        btn.layer.shadowRadius = ArcaneConfiguration.LayoutMetrics.neonGlowRadius
-        btn.layer.shadowOpacity = ArcaneConfiguration.LayoutMetrics.neonGlowOpacity
+        // Bayang cahaya neon
+        btn.layer.shadowColor = warnaGradien.0.cgColor
+        btn.layer.shadowRadius = KonfigurasiRahsia.MetrikSusunAtur.jejariCahayaNeon
+        btn.layer.shadowOpacity = KonfigurasiRahsia.MetrikSusunAtur.kelegumanCahayaNeon
         btn.layer.shadowOffset = CGSize(width: 0, height: 0)
         btn.layer.masksToBounds = false
         
         btn.translatesAutoresizingMaskIntoConstraints = false
-        btn.addTarget(self, action: action, for: .touchUpInside)
+        btn.addTarget(self, action: tindakan, for: .touchUpInside)
         
-        // Button press animation
-        btn.addTarget(self, action: #selector(buttonPressed(_:)), for: .touchDown)
-        btn.addTarget(self, action: #selector(buttonReleased(_:)), for: [.touchUpInside, .touchUpOutside, .touchCancel])
+        // Animasi tekan butang
+        btn.addTarget(self, action: #selector(butangDitekan(_:)), for: .touchDown)
+        btn.addTarget(self, action: #selector(butangDilepas(_:)), for: [.touchUpInside, .touchUpOutside, .touchCancel])
         
-        // Constraints for blur view
+        // Kekangan untuk paparan kabur
         NSLayoutConstraint.activate([
-            blurView.topAnchor.constraint(equalTo: btn.topAnchor),
-            blurView.leadingAnchor.constraint(equalTo: btn.leadingAnchor),
-            blurView.trailingAnchor.constraint(equalTo: btn.trailingAnchor),
-            blurView.bottomAnchor.constraint(equalTo: btn.bottomAnchor)
+            paparanKabur.topAnchor.constraint(equalTo: btn.topAnchor),
+            paparanKabur.leadingAnchor.constraint(equalTo: btn.leadingAnchor),
+            paparanKabur.trailingAnchor.constraint(equalTo: btn.trailingAnchor),
+            paparanKabur.bottomAnchor.constraint(equalTo: btn.bottomAnchor)
         ])
         
         return btn
     }
     
-    @objc private func buttonPressed(_ sender: UIButton) {
+    @objc private func butangDitekan(_ penghantar: UIButton) {
         UIView.animate(withDuration: 0.1) {
-            sender.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
-            sender.alpha = 0.8
+            penghantar.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
+            penghantar.alpha = 0.8
         }
     }
     
-    @objc private func buttonReleased(_ sender: UIButton) {
+    @objc private func butangDilepas(_ penghantar: UIButton) {
         UIView.animate(withDuration: 0.2, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.5, options: .curveEaseOut) {
-            sender.transform = .identity
-            sender.alpha = 1.0
+            penghantar.transform = .identity
+            penghantar.alpha = 1.0
         }
     }
     
-    private func setupAnimations() {
-        // Title animation
-        titleBanner.alpha = 0
-        titleBanner.transform = CGAffineTransform(translationX: 0, y: -30)
+    private func sediakanAnimasi() {
+        // Animasi tajuk
+        panerTajuk.alpha = 0
+        panerTajuk.transform = CGAffineTransform(translationX: 0, y: -30)
         
         UIView.animate(withDuration: 1.0, delay: 0.2, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .curveEaseOut) {
-            self.titleBanner.alpha = 1.0
-            self.titleBanner.transform = .identity
+            self.panerTajuk.alpha = 1.0
+            self.panerTajuk.transform = .identity
         }
         
-        // Subtitle animation
-        subtitleLabel.alpha = 0
+        // Animasi subtajuk
+        labelSubtajuk.alpha = 0
         UIView.animate(withDuration: 0.8, delay: 0.5, options: .curveEaseOut) {
-            self.subtitleLabel.alpha = 1.0
+            self.labelSubtajuk.alpha = 1.0
         }
         
-        // Buttons staggered animation
-        for (index, button) in actionButtons.enumerated() {
-            button.alpha = 0
-            button.transform = CGAffineTransform(translationX: 0, y: 30)
+        // Animasi butang berperingkat
+        for (indeks, butang) in butangTindakan.enumerated() {
+            butang.alpha = 0
+            butang.transform = CGAffineTransform(translationX: 0, y: 30)
             
-            UIView.animate(withDuration: 0.6, delay: 0.7 + Double(index) * 0.15, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.5, options: .curveEaseOut) {
-                button.alpha = 1.0
-                button.transform = .identity
+            UIView.animate(withDuration: 0.6, delay: 0.7 + Double(indeks) * 0.15, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.5, options: .curveEaseOut) {
+                butang.alpha = 1.0
+                butang.transform = .identity
             }
         }
         
-        // Update gradient layers frames
+        // Kemaskini kerangka lapisan gradien
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            for (index, button) in self.actionButtons.enumerated() {
-                if index < self.gradientLayers.count {
-                    self.gradientLayers[index].frame = button.bounds
+            for (indeks, butang) in self.butangTindakan.enumerated() {
+                if indeks < self.lapisanGradienSenarai.count {
+                    self.lapisanGradienSenarai[indeks].frame = butang.bounds
                 }
             }
         }
@@ -322,59 +320,59 @@ class HpoiueGatewayController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        // Update gradient layers when view appears
-        for (index, button) in actionButtons.enumerated() {
-            if index < gradientLayers.count {
-                gradientLayers[index].frame = button.bounds
+        // Kemaskini lapisan gradien apabila paparan muncul
+        for (indeks, butang) in butangTindakan.enumerated() {
+            if indeks < lapisanGradienSenarai.count {
+                lapisanGradienSenarai[indeks].frame = butang.bounds
             }
         }
     }
     
-    @objc private func launchDifficultyDialog() {
-        navigateToDifficultySelection()
+    @objc private func lancarkanDialogKesukaran() {
+        navigasiKePemilihanKesukaran()
     }
     
-    @objc private func openLeaderboard() {
-        navigateToLeaderboard()
+    @objc private func bukaPapanKedudukan() {
+        navigasiKePapanKedudukan()
     }
     
-    @objc private func displayInstructions() {
-        navigateToInstructions()
+    @objc private func paparkanArahan() {
+        navigasiKeArahan()
     }
     
-    @objc private func openFeedbackForm() {
-        navigateToFeedbackPortal()
+    @objc private func bukaBorangMaklumBalas() {
+        navigasiKePortalMaklumBalas()
     }
 }
 
-extension HpoiueGatewayController: NavigationOrchestrator {
+extension PengawalPintuGerbangUtama: OrkestratorNavigasi {
     
-    func navigateToDifficultySelection() {
-        let portal = LuminousDialogPortal()
-        let actions = [
-            DialogAction(title: "Simple", style: .primary) { [weak self] in
-                self?.commenceGameplay(difficulty: .novice)
+    func navigasiKePemilihanKesukaran() {
+        let portal = PortalDialogBercahaya()
+        let tindakanSenarai = [
+            TindakanDialog(tajuk: "Simple", gaya: .primer) { [weak self] in
+                self?.mulakanPermainan(kesukaran: .pemula)
             },
-            DialogAction(title: "Difficult", style: .primary) { [weak self] in
-                self?.commenceGameplay(difficulty: .arduous)
+            TindakanDialog(tajuk: "Difficult", gaya: .primer) { [weak self] in
+                self?.mulakanPermainan(kesukaran: .sukar)
             },
-            DialogAction(title: "Cancel", style: .secondary, handler: nil)
+            TindakanDialog(tajuk: "Cancel", gaya: .sekunder, pengendali: nil)
         ]
-        portal.manifestWithConfiguration(title: "Select Difficulty", message: "Choose your challenge level", actions: actions)
+        portal.tampilkanDenganKonfigurasi(tajuk: "Select Difficulty", mesej: "Choose your challenge level", tindakan: tindakanSenarai)
     }
     
-    private func commenceGameplay(difficulty: ZenithDifficulty) {
-        let controller = GusdnBattlefieldController(difficulty: difficulty)
-        navigationController?.pushViewController(controller, animated: true)
+    private func mulakanPermainan(kesukaran: ArasKesukaran) {
+        let pengawal = PengawalMedanPerangUtama(kesukaran: kesukaran)
+        navigationController?.pushViewController(pengawal, animated: true)
     }
     
-    func navigateToLeaderboard() {
-        let controller = CusyeddChronicleController()
-        navigationController?.pushViewController(controller, animated: true)
+    func navigasiKePapanKedudukan() {
+        let pengawal = PengawalSejarahTerpilih()
+        navigationController?.pushViewController(pengawal, animated: true)
     }
     
-    func navigateToInstructions() {
-        let instructionText = """
+    func navigasiKeArahan() {
+        let teksArahan = """
         How to Play:
         
         1. Select a difficulty level (Simple: 4x4 grid, Difficult: 5x5 grid)
@@ -396,15 +394,15 @@ extension HpoiueGatewayController: NavigationOrchestrator {
         Good luck!
         """
         
-        let portal = LuminousDialogPortal()
-        let actions = [
-            DialogAction(title: "Got It!", style: .primary, handler: nil)
+        let portal = PortalDialogBercahaya()
+        let tindakanSenarai = [
+            TindakanDialog(tajuk: "Got It!", gaya: .primer, pengendali: nil)
         ]
-        portal.manifestWithConfiguration(title: "Game Rules", message: instructionText, actions: actions)
+        portal.tampilkanDenganKonfigurasi(tajuk: "Game Rules", mesej: teksArahan, tindakan: tindakanSenarai)
     }
     
-    func navigateToFeedbackPortal() {
-        let controller = UndrhusOpinionPortal()
-        navigationController?.pushViewController(controller, animated: true)
+    func navigasiKePortalMaklumBalas() {
+        let pengawal = PortalPendapatTerpilih()
+        navigationController?.pushViewController(pengawal, animated: true)
     }
 }

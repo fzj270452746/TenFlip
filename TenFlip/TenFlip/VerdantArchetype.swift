@@ -2,379 +2,395 @@
 //  VerdantArchetype.swift
 //  TenFlip
 //
-//  Game Models and Data Structures
+//  Model Permainan dan Struktur Data
 //
 
 import Foundation
 
-// MARK: - Protocol-Based Architecture
+// MARK: - Seni Bina Berasaskan Protokol
 
-protocol DifficultyConfiguration {
-    var gridDimension: Int { get }
-    var temporalAllowance: Int { get }
-    var totalCellCount: Int { get }
+protocol KonfigurasiKesukaran {
+    var dimensiGrid: Int { get }
+    var elaungMasa: Int { get }
+    var jumlahSelTotal: Int { get }
 }
 
-protocol CardValueProvider {
-    var displayValue: Int { get }
-    var imageName: String { get }
+protocol PenyediaNilaiKad {
+    var nilaiPaparan: Int { get }
+    var namaGambar: String { get }
 }
 
-protocol CardStateManager {
-    var isRevealed: Bool { get set }
-    var isEliminated: Bool { get set }
+protocol PengurusKeadaanKad {
+    var sedangDibuka: Bool { get set }
+    var telahDihapuskan: Bool { get set }
 }
 
-protocol GridPositionProvider {
-    var gridPosition: Int { get set }
+protocol PenyediaPosisiGrid {
+    var posisiGrid: Int { get set }
 }
 
-protocol IdentifiableEntity {
-    var identifier: String { get }
+protocol EntitiYangBolehDikenali {
+    var pengecam: String { get }
 }
 
-// MARK: - Difficulty Mode Implementation
+// MARK: - Pelaksanaan Mod Kesukaran
 
-enum ZenithDifficulty: String, Codable {
-    case novice = "Simple"
-    case arduous = "Difficult"
+enum ArasKesukaran: String, Codable {
+    case pemula = "Simple"
+    case sukar = "Difficult"
     
-    private struct Configuration: DifficultyConfiguration {
-        let gridDimension: Int
-        let temporalAllowance: Int
-        var totalCellCount: Int { gridDimension * gridDimension }
-    }
-    
-    private var configuration: Configuration {
-        switch self {
-        case .novice:
-            return Configuration(gridDimension: 4, temporalAllowance: 40)
-        case .arduous:
-            return Configuration(gridDimension: 5, temporalAllowance: 60)
+    private struct StrukturKonfigurasi: KonfigurasiKesukaran {
+        let dimensiGrid: Int
+        let elaungMasa: Int
+        var jumlahSelTotal: Int { 
+            return kiraJumlahSel(dimensi: dimensiGrid) 
+        }
+        
+        private func kiraJumlahSel(dimensi: Int) -> Int {
+            return dimensi * dimensi
         }
     }
     
-    var gridDimension: Int { configuration.gridDimension }
-    var temporalAllowance: Int { configuration.temporalAllowance }
-    var totalCellCount: Int { configuration.totalCellCount }
+    private var konfig: StrukturKonfigurasi {
+        switch self {
+        case .pemula:
+            return StrukturKonfigurasi(dimensiGrid: 4, elaungMasa: 40)
+        case .sukar:
+            return StrukturKonfigurasi(dimensiGrid: 5, elaungMasa: 60)
+        }
+    }
+    
+    var dimensiGrid: Int { 
+        return konfig.dimensiGrid 
+    }
+    var elaungMasa: Int { 
+        return konfig.elaungMasa 
+    }
+    var jumlahSelTotal: Int { 
+        return konfig.jumlahSelTotal 
+    }
 }
 
-// MARK: - Mahjong Suit Type
+// MARK: - Jenis Sut Mahjong
 
-enum EtherealSuit: String, CaseIterable {
+enum SutEteria: String, CaseIterable {
     case ndhuu
     case tersg
     case koden
     
-    static func randomSelection() -> EtherealSuit {
-        return allCases[Int.random(in: 0..<allCases.count)]
+    static func pemilihanRawak() -> SutEteria {
+        let indeks = Int.random(in: 0..<allCases.count)
+        return allCases[indeks]
     }
 }
 
-// MARK: - Card Type Implementation
+// MARK: - Pelaksanaan Jenis Kad
 
-enum CelestialCardType {
-    case numericGlyph(Int)
-    case mahjongTile(suit: EtherealSuit, value: Int)
+enum JenisKadCelestial {
+    case glifNumerik(Int)
+    case jubenMahjong(sut: SutEteria, nilai: Int)
     
-    private struct ValueExtractor: CardValueProvider {
-        let cardType: CelestialCardType
+    private struct PengekstrakNilai: PenyediaNilaiKad {
+        let jenisKad: JenisKadCelestial
         
-        var displayValue: Int {
-            switch cardType {
-            case .numericGlyph(let val):
-                return val
-            case .mahjongTile(_, let val):
-                return val
+        var nilaiPaparan: Int {
+            switch jenisKad {
+            case .glifNumerik(let nilaiAngka):
+                return nilaiAngka
+            case .jubenMahjong(_, let nilaiAngka):
+                return nilaiAngka
             }
         }
         
-        var imageName: String {
-            switch cardType {
-            case .numericGlyph(let val):
-                return "number\(val)"
-            case .mahjongTile(let suit, let val):
-                return "\(suit.rawValue)\(val)"
+        var namaGambar: String {
+            switch jenisKad {
+            case .glifNumerik(let nilaiAngka):
+                return hasilkanNamaGambarNumerik(nilai: nilaiAngka)
+            case .jubenMahjong(let sut, let nilaiAngka):
+                return hasilkanNamaGambarMahjong(sut: sut, nilai: nilaiAngka)
             }
+        }
+        
+        private func hasilkanNamaGambarNumerik(nilai: Int) -> String {
+            return "number\(nilai)"
+        }
+        
+        private func hasilkanNamaGambarMahjong(sut: SutEteria, nilai: Int) -> String {
+            return "\(sut.rawValue)\(nilai)"
         }
     }
     
-    private var extractor: ValueExtractor {
-        ValueExtractor(cardType: self)
+    private var pengekstrak: PengekstrakNilai {
+        return PengekstrakNilai(jenisKad: self)
     }
     
-    var displayValue: Int { extractor.displayValue }
-    var imageName: String { extractor.imageName }
-}
-
-// MARK: - Card Model Implementation
-
-class MysticTileEntity: IdentifiableEntity, CardStateManager, GridPositionProvider {
-    let identifier: String
-    let cardType: CelestialCardType
-    var isRevealed: Bool = false
-    var isEliminated: Bool = false
-    var gridPosition: Int
-    
-    init(identifier: String, cardType: CelestialCardType, gridPosition: Int) {
-        self.identifier = identifier
-        self.cardType = cardType
-        self.gridPosition = gridPosition
+    var nilaiPaparan: Int { 
+        return pengekstrak.nilaiPaparan 
+    }
+    var namaGambar: String { 
+        return pengekstrak.namaGambar 
     }
 }
 
-// MARK: - Game State
+// MARK: - Pelaksanaan Model Kad
 
-enum ObscureGamePhase {
-    case pristine
-    case commenced
-    case suspended
-    case triumph
-    case vanquished
+class EntitiJubenMistik: EntitiYangBolehDikenali, PengurusKeadaanKad, PenyediaPosisiGrid {
+    let pengecam: String
+    let jenisKad: JenisKadCelestial
+    var sedangDibuka: Bool = false
+    var telahDihapuskan: Bool = false
+    var posisiGrid: Int
+    
+    init(pengecam: String, jenisKad: JenisKadCelestial, posisiGrid: Int) {
+        self.pengecam = pengecam
+        self.jenisKad = jenisKad
+        self.posisiGrid = posisiGrid
+    }
 }
 
-// MARK: - Leaderboard Entry
+// MARK: - Keadaan Permainan
 
-struct PinnacleRecord: Codable {
-    let difficulty: ZenithDifficulty
-    let achievedLevel: Int
-    let timestamp: Date
+enum FasaPermainanKelam {
+    case murni
+    case dimulakan
+    case ditangguhkan
+    case kemenangan
+    case kekalahan
+}
+
+// MARK: - Entri Papan Kedudukan
+
+struct RekodPuncak: Codable {
+    let kesukaran: ArasKesukaran
+    let arasDicapai: Int
+    let capWaktu: Date
     
-    private struct DateFormatterProvider {
-        static let shared: DateFormatter = {
-            let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            formatter.timeStyle = .short
-            return formatter
+    private struct PenyediaFormatTarikh {
+        static let dikongsi: DateFormatter = {
+            let pemformat = DateFormatter()
+            pemformat.dateStyle = .medium
+            pemformat.timeStyle = .short
+            return pemformat
         }()
     }
     
-    var formattedDate: String {
-        DateFormatterProvider.shared.string(from: timestamp)
+    var tarikhDiformat: String {
+        return PenyediaFormatTarikh.dikongsi.string(from: capWaktu)
     }
 }
 
-// MARK: - Card Generation Strategy
+// MARK: - Strategi Penjanaan Kad
 
-protocol CardGenerationStrategy {
-    func generatePairs(count: Int) -> [(Int, Int)]
+protocol StrategiPenjanaanKad {
+    func janaPasanganKad(jumlah: Int) -> [(Int, Int)]
 }
 
-struct RandomPairGenerationStrategy: CardGenerationStrategy {
-    func generatePairs(count: Int) -> [(Int, Int)] {
-        // Generate enough pairs to fill all cells
-        // If count is odd, we need (count + 1) / 2 pairs, then use only count values
-        // If count is even, we need count / 2 pairs
-        let pairsNeeded = (count + 1) / 2
-        var pairs: [(Int, Int)] = []
-        var generatedValues = Set<Int>()
-        var attempts = 0
-        let maxAttempts = count * 10
+struct StrategiPenjanaanPasanganRawak: StrategiPenjanaanKad {
+    func janaPasanganKad(jumlah: Int) -> [(Int, Int)] {
+        let jumlahPasanganDiperlukan = (jumlah + 1) / 2
+        var pasangan: [(Int, Int)] = []
+        var nilaiYangDijana = Set<Int>()
+        var percubaan = 0
+        let maksimaPercubaan = jumlah * 10
         
-        while pairs.count < pairsNeeded && attempts < maxAttempts {
-            let value = Int.random(in: 1...9)
-            let complement = 10 - value
+        while pasangan.count < jumlahPasanganDiperlukan && percubaan < maksimaPercubaan {
+            let nilai = Int.random(in: 1...9)
+            let pelengkap = 10 - nilai
             
-            if complement >= 1 && complement <= 9 && !generatedValues.contains(value) {
-                pairs.append((value, complement))
-                generatedValues.insert(value)
-                generatedValues.insert(complement)
+            if pelengkap >= 1 && pelengkap <= 9 && !nilaiYangDijana.contains(nilai) {
+                pasangan.append((nilai, pelengkap))
+                nilaiYangDijana.insert(nilai)
+                nilaiYangDijana.insert(pelengkap)
             }
-            attempts += 1
+            percubaan += 1
         }
         
-        // Fill remaining if needed
-        while pairs.count < pairsNeeded {
-            let value = Int.random(in: 1...9)
-            let complement = 10 - value
-            if complement >= 1 && complement <= 9 {
-                pairs.append((value, complement))
+        while pasangan.count < jumlahPasanganDiperlukan {
+            let nilai = Int.random(in: 1...9)
+            let pelengkap = 10 - nilai
+            if pelengkap >= 1 && pelengkap <= 9 {
+                pasangan.append((nilai, pelengkap))
             }
         }
         
-        return pairs
+        return pasangan
     }
 }
 
-// MARK: - Grid Builder
+// MARK: - Pembina Grid
 
-protocol GridBuilder {
-    func buildUpperGrid(pairs: [(Int, Int)]) -> [MysticTileEntity]
-    func buildLowerGrid(pairs: [(Int, Int)]) -> [MysticTileEntity]
+protocol PembinaGrid {
+    func binaGridAtas(pasangan: [(Int, Int)]) -> [EntitiJubenMistik]
+    func binaGridBawah(pasangan: [(Int, Int)]) -> [EntitiJubenMistik]
 }
 
-class StandardGridBuilder: GridBuilder {
-    private var targetCellCount: Int = 0
+class PembinaBakuGrid: PembinaGrid {
+    private var jumlahSelSasaran: Int = 0
     
-    func buildUpperGrid(pairs: [(Int, Int)]) -> [MysticTileEntity] {
-        var values: [Int] = []
-        for (value, complement) in pairs {
-            values.append(value)
-            values.append(complement)
+    func binaGridAtas(pasangan: [(Int, Int)]) -> [EntitiJubenMistik] {
+        var nilaiSenarai: [Int] = []
+        for (nilai, pelengkap) in pasangan {
+            nilaiSenarai.append(nilai)
+            nilaiSenarai.append(pelengkap)
         }
         
-        values.shuffle()
+        nilaiSenarai.shuffle()
         
-        // Store the target count (will be set by the session)
-        // If not set, use all available values
-        let countToUse = targetCellCount > 0 ? min(targetCellCount, values.count) : values.count
+        let jumlahDiguna = jumlahSelSasaran > 0 ? min(jumlahSelSasaran, nilaiSenarai.count) : nilaiSenarai.count
         
-        return values.prefix(countToUse).enumerated().map { index, value in
-            MysticTileEntity(
-                identifier: UUID().uuidString,
-                cardType: .numericGlyph(value),
-                gridPosition: index
+        return nilaiSenarai.prefix(jumlahDiguna).enumerated().map { indeks, nilai in
+            EntitiJubenMistik(
+                pengecam: UUID().uuidString,
+                jenisKad: .glifNumerik(nilai),
+                posisiGrid: indeks
             )
         }
     }
     
-    func buildLowerGrid(pairs: [(Int, Int)]) -> [MysticTileEntity] {
-        var values: [Int] = []
-        for (value, complement) in pairs {
-            values.append(value)
-            values.append(complement)
+    func binaGridBawah(pasangan: [(Int, Int)]) -> [EntitiJubenMistik] {
+        var nilaiSenarai: [Int] = []
+        for (nilai, pelengkap) in pasangan {
+            nilaiSenarai.append(nilai)
+            nilaiSenarai.append(pelengkap)
         }
         
-        // Create complements for all values
-        let complements = values.map { 10 - $0 }
-        var shuffledComplements = complements.shuffled()
+        let pelengkapSenarai = nilaiSenarai.map { 10 - $0 }
+        let pelengkapTerKocok = pelengkapSenarai.shuffled()
         
-        // Use the same count as upper grid
-        let countToUse = targetCellCount > 0 ? min(targetCellCount, shuffledComplements.count) : shuffledComplements.count
+        let jumlahDiguna = jumlahSelSasaran > 0 ? min(jumlahSelSasaran, pelengkapTerKocok.count) : pelengkapTerKocok.count
         
-        return shuffledComplements.prefix(countToUse).enumerated().map { index, complementValue in
-            MysticTileEntity(
-                identifier: UUID().uuidString,
-                cardType: .mahjongTile(suit: EtherealSuit.randomSelection(), value: complementValue),
-                gridPosition: index
+        return pelengkapTerKocok.prefix(jumlahDiguna).enumerated().map { indeks, nilaiPelengkap in
+            EntitiJubenMistik(
+                pengecam: UUID().uuidString,
+                jenisKad: .jubenMahjong(sut: SutEteria.pemilihanRawak(), nilai: nilaiPelengkap),
+                posisiGrid: indeks
             )
         }
     }
     
-    func setTargetCellCount(_ count: Int) {
-        targetCellCount = count
+    func tetapkanJumlahSelSasaran(_ jumlah: Int) {
+        jumlahSelSasaran = jumlah
     }
 }
 
-// MARK: - Game Session Implementation
+// MARK: - Pelaksanaan Sesi Permainan
 
-class EphemeralGameSession {
-    var difficulty: ZenithDifficulty
-    var currentLevel: Int = 1
-    var upperGridCards: [MysticTileEntity] = []
-    var lowerGridCards: [MysticTileEntity] = []
-    var remainingTime: Int
-    var selectedFromUpper: MysticTileEntity?
-    var selectedFromLower: MysticTileEntity?
-    var gamePhase: ObscureGamePhase = .pristine
+class SesiPermainanEfemeral {
+    var kesukaran: ArasKesukaran
+    var arasSemasa: Int = 1
+    var kadGridAtas: [EntitiJubenMistik] = []
+    var kadGridBawah: [EntitiJubenMistik] = []
+    var masaBaki: Int
+    var dipilihDariAtas: EntitiJubenMistik?
+    var dipilihDariBawah: EntitiJubenMistik?
+    var fasaPermainan: FasaPermainanKelam = .murni
     
-    private let cardGenerationStrategy: CardGenerationStrategy
-    private let gridBuilder: GridBuilder
+    private let strategiPenjanaan: StrategiPenjanaanKad
+    private let pembinaGrid: PembinaGrid
     
-    init(difficulty: ZenithDifficulty, 
-         strategy: CardGenerationStrategy = RandomPairGenerationStrategy(),
-         builder: GridBuilder = StandardGridBuilder()) {
-        self.difficulty = difficulty
-        self.remainingTime = difficulty.temporalAllowance
-        self.cardGenerationStrategy = strategy
-        self.gridBuilder = builder
+    init(kesukaran: ArasKesukaran, 
+         strategi: StrategiPenjanaanKad = StrategiPenjanaanPasanganRawak(),
+         pembina: PembinaGrid = PembinaBakuGrid()) {
+        self.kesukaran = kesukaran
+        self.masaBaki = kesukaran.elaungMasa
+        self.strategiPenjanaan = strategi
+        self.pembinaGrid = pembina
     }
     
-    func generateNewLevel() {
-        resetSessionState()
+    func janaArasBarau() {
+        setSemulaKeadaanSesi()
         
-        let totalCells = difficulty.totalCellCount
-        let pairs = cardGenerationStrategy.generatePairs(count: totalCells)
+        let jumlahSel = kesukaran.jumlahSelTotal
+        let pasangan = strategiPenjanaan.janaPasanganKad(jumlah: jumlahSel)
         
-        // Set target count in builder to ensure correct number of cards
-        if let standardBuilder = gridBuilder as? StandardGridBuilder {
-            standardBuilder.setTargetCellCount(totalCells)
+        if let pembinaStandard = pembinaGrid as? PembinaBakuGrid {
+            pembinaStandard.tetapkanJumlahSelSasaran(jumlahSel)
         }
         
-        upperGridCards = gridBuilder.buildUpperGrid(pairs: pairs)
-        lowerGridCards = gridBuilder.buildLowerGrid(pairs: pairs)
+        kadGridAtas = pembinaGrid.binaGridAtas(pasangan: pasangan)
+        kadGridBawah = pembinaGrid.binaGridBawah(pasangan: pasangan)
         
-        updateLowerGridPositions()
+        kemaskiniPosisiGridBawah()
     }
     
-    private func resetSessionState() {
-        upperGridCards.removeAll()
-        lowerGridCards.removeAll()
-        selectedFromUpper = nil
-        selectedFromLower = nil
-        remainingTime = difficulty.temporalAllowance
+    private func setSemulaKeadaanSesi() {
+        kadGridAtas.removeAll()
+        kadGridBawah.removeAll()
+        dipilihDariAtas = nil
+        dipilihDariBawah = nil
+        masaBaki = kesukaran.elaungMasa
     }
     
-    private func updateLowerGridPositions() {
-        lowerGridCards.enumerated().forEach { index, card in
-            card.gridPosition = index
+    private func kemaskiniPosisiGridBawah() {
+        kadGridBawah.enumerated().forEach { indeks, kad in
+            kad.posisiGrid = indeks
         }
     }
 }
 
-// MARK: - Storage Protocol
+// MARK: - Storan Persistens
 
-protocol PersistentStorage {
-    func savePinnacleRecord(_ record: PinnacleRecord)
-    func fetchPinnacleRecords() -> [PinnacleRecord]
-    func fetchRecordsForDifficulty(_ difficulty: ZenithDifficulty) -> [PinnacleRecord]
-    func saveFeedbackEntry(_ feedback: String)
-    func fetchFeedbackEntries() -> [[String: Any]]
+protocol StoranKekal {
+    func simpanRekodPuncak(_ rekod: RekodPuncak)
+    func ambilRekodPuncak() -> [RekodPuncak]
+    func ambilRekodUntukKesukaran(_ kesukaran: ArasKesukaran) -> [RekodPuncak]
+    func simpanentriMaklumBalas(_ maklumBalas: String)
+    func ambilEntriMaklumBalas() -> [[String: Any]]
 }
 
-// MARK: - Persistent Storage Manager Implementation
+// MARK: - Pelaksanaan Pengurus Storan Kekal
 
-class AncientVaultKeeper: PersistentStorage {
-    static let shared = AncientVaultKeeper()
-    private let pinnacleRecordsKey = "nebulous_pinnacle_records"
-    private let feedbackRepositoryKey = "ethereal_feedback_repository"
+class PenjagaVault: StoranKekal {
+    static let dikongsi = PenjagaVault()
+    private let kunciRekodPuncak = "rekod_puncak_nebulous"
+    private let kunciRepositoriMaklumBalas = "repositori_maklum_balas_eteria"
     
-    private let encoder: JSONEncoder
-    private let decoder: JSONDecoder
-    private let userDefaults: UserDefaults
+    private let pengekod: JSONEncoder
+    private let penyahkod: JSONDecoder
+    private let piawaiPengguna: UserDefaults
     
-    private init(encoder: JSONEncoder = JSONEncoder(),
-                 decoder: JSONDecoder = JSONDecoder(),
-                 userDefaults: UserDefaults = .standard) {
-        self.encoder = encoder
-        self.decoder = decoder
-        self.userDefaults = userDefaults
+    private init(pengekod: JSONEncoder = JSONEncoder(),
+                 penyahkod: JSONDecoder = JSONDecoder(),
+                 piawaiPengguna: UserDefaults = .standard) {
+        self.pengekod = pengekod
+        self.penyahkod = penyahkod
+        self.piawaiPengguna = piawaiPengguna
     }
     
-    func savePinnacleRecord(_ record: PinnacleRecord) {
-        var records = fetchPinnacleRecords()
-        records.append(record)
-        records.sort { $0.achievedLevel > $1.achievedLevel }
+    func simpanRekodPuncak(_ rekod: RekodPuncak) {
+        var rekodSedia = ambilRekodPuncak()
+        rekodSedia.append(rekod)
+        rekodSedia.sort { $0.arasDicapai > $1.arasDicapai }
         
-        guard let encoded = try? encoder.encode(records) else { return }
-        userDefaults.set(encoded, forKey: pinnacleRecordsKey)
+        guard let dikodkan = try? pengekod.encode(rekodSedia) else { return }
+        piawaiPengguna.set(dikodkan, forKey: kunciRekodPuncak)
     }
     
-    func fetchPinnacleRecords() -> [PinnacleRecord] {
-        guard let data = userDefaults.data(forKey: pinnacleRecordsKey),
-              let records = try? decoder.decode([PinnacleRecord].self, from: data) else {
+    func ambilRekodPuncak() -> [RekodPuncak] {
+        guard let data = piawaiPengguna.data(forKey: kunciRekodPuncak),
+              let rekod = try? penyahkod.decode([RekodPuncak].self, from: data) else {
             return []
         }
-        return records
+        return rekod
     }
     
-    func fetchRecordsForDifficulty(_ difficulty: ZenithDifficulty) -> [PinnacleRecord] {
-        return fetchPinnacleRecords()
-            .filter { $0.difficulty == difficulty }
-            .sorted { $0.achievedLevel > $1.achievedLevel }
+    func ambilRekodUntukKesukaran(_ kesukaran: ArasKesukaran) -> [RekodPuncak] {
+        return ambilRekodPuncak()
+            .filter { $0.kesukaran == kesukaran }
+            .sorted { $0.arasDicapai > $1.arasDicapai }
     }
     
-    func saveFeedbackEntry(_ feedback: String) {
-        var feedbackList = fetchFeedbackEntries()
-        let entry: [String: Any] = [
-            "content": feedback,
-            "timestamp": Date().timeIntervalSince1970
+    func simpanentriMaklumBalas(_ maklumBalas: String) {
+        var senariMaklumBalas = ambilEntriMaklumBalas()
+        let entri: [String: Any] = [
+            "kandungan": maklumBalas,
+            "capWaktu": Date().timeIntervalSince1970
         ]
-        feedbackList.append(entry)
-        userDefaults.set(feedbackList, forKey: feedbackRepositoryKey)
+        senariMaklumBalas.append(entri)
+        piawaiPengguna.set(senariMaklumBalas, forKey: kunciRepositoriMaklumBalas)
     }
     
-    func fetchFeedbackEntries() -> [[String: Any]] {
-        return userDefaults.array(forKey: feedbackRepositoryKey) as? [[String: Any]] ?? []
+    func ambilEntriMaklumBalas() -> [[String: Any]] {
+        return piawaiPengguna.array(forKey: kunciRepositoriMaklumBalas) as? [[String: Any]] ?? []
     }
 }

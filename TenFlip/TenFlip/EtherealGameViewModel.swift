@@ -2,269 +2,289 @@
 //  EtherealGameViewModel.swift
 //  TenFlip
 //
-//  Game View Model Layer
+//  Lapisan Model Paparan Permainan
 //
 
 import Foundation
 
-// MARK: - Observer Protocol
+// MARK: - Protokol Pemerhati
 
-protocol EtherealGameStateObserver: AnyObject {
-    func chronicleDidAdvance(to level: Int)
-    func temporalFluxUpdated(remaining: Int)
-    func cardSelectionDidChange()
-    func triumphAchieved()
-    func catastrophicFailure()
-    func pairWasEliminated()
+protocol PemerhatiKeadaanPermainanEteria: AnyObject {
+    func sejarahTelahMaju(ke aras: Int)
+    func fluksMasaDikemaskini(baki: Int)
+    func pemilihanKadBerubah()
+    func kemenangandiperoleh()
+    func kegagalanKatastrofik()
+    func pasanganTelahDihapuskan()
 }
 
-// MARK: - Timer Protocol
+// MARK: - Protokol Pemasa
 
-protocol TemporalEngineProtocol {
-    func start(interval: TimeInterval, handler: @escaping () -> Void)
-    func stop()
+protocol ProtokolEnginTemporal {
+    func mula(selang: TimeInterval, pengendalian: @escaping () -> Void)
+    func berhenti()
 }
 
-class StandardTemporalEngine: TemporalEngineProtocol {
-    private var timer: Timer?
+class EnginTemporalStandard: ProtokolEnginTemporal {
+    private var pemasa: Timer?
     
-    func start(interval: TimeInterval, handler: @escaping () -> Void) {
-        stop()
-        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
-            handler()
+    func mula(selang: TimeInterval, pengendalian: @escaping () -> Void) {
+        hentikanPemasaSemasa()
+        pemasa = Timer.scheduledTimer(withTimeInterval: selang, repeats: true) { _ in
+            pengendalian()
         }
     }
     
-    func stop() {
-        timer?.invalidate()
-        timer = nil
+    func berhenti() {
+        hentikanPemasaSemasa()
+    }
+    
+    private func hentikanPemasaSemasa() {
+        pemasa?.invalidate()
+        pemasa = nil
     }
 }
 
-// MARK: - Command Pattern
+// MARK: - Corak Arahan
 
-protocol GameCommand {
-    func execute()
+protocol ArahanPermainan {
+    func laksanakan()
 }
 
-class CardSelectionCommand: GameCommand {
-    private weak var session: EphemeralGameSession?
-    private let index: Int
-    private let isUpper: Bool
-    private weak var observer: EtherealGameStateObserver?
+class ArahanPemilihanKad: ArahanPermainan {
+    private weak var sesi: SesiPermainanEfemeral?
+    private let indeks: Int
+    private let dariAtas: Bool
+    private weak var pemerhati: PemerhatiKeadaanPermainanEteria?
     
-    init(session: EphemeralGameSession, index: Int, isUpper: Bool, observer: EtherealGameStateObserver?) {
-        self.session = session
-        self.index = index
-        self.isUpper = isUpper
-        self.observer = observer
+    init(sesi: SesiPermainanEfemeral, indeks: Int, dariAtas: Bool, pemerhati: PemerhatiKeadaanPermainanEteria?) {
+        self.sesi = sesi
+        self.indeks = indeks
+        self.dariAtas = dariAtas
+        self.pemerhati = pemerhati
     }
     
-    func execute() {
-        guard let session = session else { return }
-        let entities = isUpper ? session.upperGridCards : session.lowerGridCards
-        guard index < entities.count else { return }
+    func laksanakan() {
+        guard let sesi = sesi else { return }
+        let entitiSenarai = dariAtas ? sesi.kadGridAtas : sesi.kadGridBawah
+        guard indeks < entitiSenarai.count else { return }
         
-        let targetEntity = entities[index]
+        let entitiSasaran = entitiSenarai[indeks]
         
-        guard !targetEntity.isEliminated else { return }
-        guard session.selectedFromUpper == nil || session.selectedFromLower == nil else { return }
+        guard !entitiSasaran.telahDihapuskan else { return }
+        guard sesi.dipilihDariAtas == nil || sesi.dipilihDariBawah == nil else { return }
         
-        if isUpper {
-            guard session.selectedFromUpper == nil else { return }
-            targetEntity.isRevealed = true
-            session.selectedFromUpper = targetEntity
+        if dariAtas {
+            guard sesi.dipilihDariAtas == nil else { return }
+            bukaKadDanPilih(entiti: entitiSasaran, dalamSesi: sesi, atasGrid: true)
         } else {
-            guard session.selectedFromLower == nil else { return }
-            targetEntity.isRevealed = true
-            session.selectedFromLower = targetEntity
+            guard sesi.dipilihDariBawah == nil else { return }
+            bukaKadDanPilih(entiti: entitiSasaran, dalamSesi: sesi, atasGrid: false)
         }
         
-        observer?.cardSelectionDidChange()
-    }
-}
-
-// MARK: - Match Evaluation Strategy
-
-protocol MatchEvaluationStrategy {
-    func evaluate(upper: MysticTileEntity, lower: MysticTileEntity) -> Bool
-    func getSum(upper: MysticTileEntity, lower: MysticTileEntity) -> Int
-}
-
-class StandardMatchEvaluationStrategy: MatchEvaluationStrategy {
-    func evaluate(upper: MysticTileEntity, lower: MysticTileEntity) -> Bool {
-        return getSum(upper: upper, lower: lower) == 10
+        pemerhati?.pemilihanKadBerubah()
     }
     
-    func getSum(upper: MysticTileEntity, lower: MysticTileEntity) -> Int {
-        return upper.cardType.displayValue + lower.cardType.displayValue
-    }
-}
-
-// MARK: - State Manager
-
-protocol GameStateManager {
-    func checkVictoryCondition(session: EphemeralGameSession) -> Bool
-    func processMatchResult(isMatch: Bool, upper: MysticTileEntity, lower: MysticTileEntity, session: EphemeralGameSession)
-}
-
-class StandardGameStateManager: GameStateManager {
-    func checkVictoryCondition(session: EphemeralGameSession) -> Bool {
-        let upperComplete = session.upperGridCards.allSatisfy { $0.isEliminated }
-        let lowerComplete = session.lowerGridCards.allSatisfy { $0.isEliminated }
-        return upperComplete && lowerComplete
-    }
-    
-    func processMatchResult(isMatch: Bool, upper: MysticTileEntity, lower: MysticTileEntity, session: EphemeralGameSession) {
-        if isMatch {
-            upper.isEliminated = true
-            lower.isEliminated = true
-            session.selectedFromUpper = nil
-            session.selectedFromLower = nil
-            session.remainingTime += ArcaneConfiguration.GameParameters.timeBonus
+    private func bukaKadDanPilih(entiti: EntitiJubenMistik, dalamSesi sesi: SesiPermainanEfemeral, atasGrid: Bool) {
+        entiti.sedangDibuka = true
+        if atasGrid {
+            sesi.dipilihDariAtas = entiti
         } else {
-            upper.isRevealed = false
-            lower.isRevealed = false
-            session.selectedFromUpper = nil
-            session.selectedFromLower = nil
+            sesi.dipilihDariBawah = entiti
         }
     }
 }
 
-// MARK: - ViewModel Implementation
+// MARK: - Strategi Penilaian Padanan
 
-class EtherealGameViewModel {
-    
-    private(set) var arcaneSession: EphemeralGameSession
-    weak var stateObserver: EtherealGameStateObserver?
-    
-    private let temporalEngine: TemporalEngineProtocol
-    private let matchStrategy: MatchEvaluationStrategy
-    private let stateManager: GameStateManager
-    
-    init(difficulty: ZenithDifficulty,
-         temporalEngine: TemporalEngineProtocol = StandardTemporalEngine(),
-         matchStrategy: MatchEvaluationStrategy = StandardMatchEvaluationStrategy(),
-         stateManager: GameStateManager = StandardGameStateManager()) {
-        self.arcaneSession = EphemeralGameSession(difficulty: difficulty)
-        self.temporalEngine = temporalEngine
-        self.matchStrategy = matchStrategy
-        self.stateManager = stateManager
+protocol StrategiPenilaianPadanan {
+    func nilai(atas: EntitiJubenMistik, bawah: EntitiJubenMistik) -> Bool
+    func dapatkanJumlah(atas: EntitiJubenMistik, bawah: EntitiJubenMistik) -> Int
+}
+
+class StrategiPenilaianPadananStandard: StrategiPenilaianPadanan {
+    func nilai(atas: EntitiJubenMistik, bawah: EntitiJubenMistik) -> Bool {
+        let jumlah = dapatkanJumlah(atas: atas, bawah: bawah)
+        return jumlah == 10
     }
     
-    var currentDifficulty: ZenithDifficulty {
-        return arcaneSession.difficulty
+    func dapatkanJumlah(atas: EntitiJubenMistik, bawah: EntitiJubenMistik) -> Int {
+        return atas.jenisKad.nilaiPaparan + bawah.jenisKad.nilaiPaparan
+    }
+}
+
+// MARK: - Pengurus Keadaan
+
+protocol PengurusKeadaanPermainan {
+    func semakSyaratKemenangan(sesi: SesiPermainanEfemeral) -> Bool
+    func prosesKeputusanPadanan(padanan: Bool, atas: EntitiJubenMistik, bawah: EntitiJubenMistik, sesi: SesiPermainanEfemeral)
+}
+
+class PengurusKeadaanPermainanStandard: PengurusKeadaanPermainan {
+    func semakSyaratKemenangan(sesi: SesiPermainanEfemeral) -> Bool {
+        let atasLengkap = sesi.kadGridAtas.allSatisfy { $0.telahDihapuskan }
+        let bawahLengkap = sesi.kadGridBawah.allSatisfy { $0.telahDihapuskan }
+        return atasLengkap && bawahLengkap
     }
     
-    var currentLevel: Int {
-        return arcaneSession.currentLevel
-    }
-    
-    var remainingTime: Int {
-        return arcaneSession.remainingTime
-    }
-    
-    var upperGridEntities: [MysticTileEntity] {
-        return arcaneSession.upperGridCards
-    }
-    
-    var lowerGridEntities: [MysticTileEntity] {
-        return arcaneSession.lowerGridCards
-    }
-    
-    func commenceNewChallenge() {
-        arcaneSession.generateNewLevel()
-        arcaneSession.gamePhase = .commenced
-        stateObserver?.chronicleDidAdvance(to: arcaneSession.currentLevel)
-        initiateTemporalDecrement()
-    }
-    
-    private func initiateTemporalDecrement() {
-        temporalEngine.start(interval: 1.0) { [weak self] in
-            self?.processTemporalTick()
+    func prosesKeputusanPadanan(padanan: Bool, atas: EntitiJubenMistik, bawah: EntitiJubenMistik, sesi: SesiPermainanEfemeral) {
+        if padanan {
+            lakukanPadananBerjaya(atas: atas, bawah: bawah, sesi: sesi)
+        } else {
+            lakukanPadananGagal(atas: atas, bawah: bawah, sesi: sesi)
         }
     }
     
-    func haltTemporalEngine() {
-        temporalEngine.stop()
+    private func lakukanPadananBerjaya(atas: EntitiJubenMistik, bawah: EntitiJubenMistik, sesi: SesiPermainanEfemeral) {
+        atas.telahDihapuskan = true
+        bawah.telahDihapuskan = true
+        sesi.dipilihDariAtas = nil
+        sesi.dipilihDariBawah = nil
+        sesi.masaBaki += KonfigurasiRahsia.ParameterPermainan.bonusMasa
     }
     
-    private func processTemporalTick() {
-        arcaneSession.remainingTime -= 1
-        stateObserver?.temporalFluxUpdated(remaining: arcaneSession.remainingTime)
+    private func lakukanPadananGagal(atas: EntitiJubenMistik, bawah: EntitiJubenMistik, sesi: SesiPermainanEfemeral) {
+        atas.sedangDibuka = false
+        bawah.sedangDibuka = false
+        sesi.dipilihDariAtas = nil
+        sesi.dipilihDariBawah = nil
+    }
+}
+
+// MARK: - Pelaksanaan ViewModel
+
+class ModelPaparanPermainanEteria {
+    
+    private(set) var sesiRahsia: SesiPermainanEfemeral
+    weak var pemerhatiKeadaan: PemerhatiKeadaanPermainanEteria?
+    
+    private let enginTemporal: ProtokolEnginTemporal
+    private let strategiPadanan: StrategiPenilaianPadanan
+    private let pengurusKeadaan: PengurusKeadaanPermainan
+    
+    init(kesukaran: ArasKesukaran,
+         enginTemporal: ProtokolEnginTemporal = EnginTemporalStandard(),
+         strategiPadanan: StrategiPenilaianPadanan = StrategiPenilaianPadananStandard(),
+         pengurusKeadaan: PengurusKeadaanPermainan = PengurusKeadaanPermainanStandard()) {
+        self.sesiRahsia = SesiPermainanEfemeral(kesukaran: kesukaran)
+        self.enginTemporal = enginTemporal
+        self.strategiPadanan = strategiPadanan
+        self.pengurusKeadaan = pengurusKeadaan
+    }
+    
+    var kesukaranSemasa: ArasKesukaran {
+        return sesiRahsia.kesukaran
+    }
+    
+    var arasSemasa: Int {
+        return sesiRahsia.arasSemasa
+    }
+    
+    var masaBaki: Int {
+        return sesiRahsia.masaBaki
+    }
+    
+    var entitiGridAtas: [EntitiJubenMistik] {
+        return sesiRahsia.kadGridAtas
+    }
+    
+    var entitiGridBawah: [EntitiJubenMistik] {
+        return sesiRahsia.kadGridBawah
+    }
+    
+    func mulaCabaranBaru() {
+        sesiRahsia.janaArasBarau()
+        sesiRahsia.fasaPermainan = .dimulakan
+        pemerhatiKeadaan?.sejarahTelahMaju(ke: sesiRahsia.arasSemasa)
+        mulakanPenguranganTemporal()
+    }
+    
+    private func mulakanPenguranganTemporal() {
+        enginTemporal.mula(selang: 1.0) { [weak self] in
+            self?.prosesTikTemporal()
+        }
+    }
+    
+    func hentikanEnginTemporal() {
+        enginTemporal.berhenti()
+    }
+    
+    private func prosesTikTemporal() {
+        sesiRahsia.masaBaki -= 1
+        pemerhatiKeadaan?.fluksMasaDikemaskini(baki: sesiRahsia.masaBaki)
         
-        if arcaneSession.remainingTime <= 0 {
-            haltTemporalEngine()
-            arcaneSession.gamePhase = .vanquished
-            stateObserver?.catastrophicFailure()
+        if sesiRahsia.masaBaki <= 0 {
+            hentikanEnginTemporal()
+            sesiRahsia.fasaPermainan = .kekalahan
+            pemerhatiKeadaan?.kegagalanKatastrofik()
         }
     }
     
-    func attemptCardSelection(at index: Int, fromUpper: Bool) -> Bool {
-        let command = CardSelectionCommand(
-            session: arcaneSession,
-            index: index,
-            isUpper: fromUpper,
-            observer: stateObserver
+    func cubakanPemilihanKad(pada indeks: Int, dariAtas: Bool) -> Bool {
+        let arahan = ArahanPemilihanKad(
+            sesi: sesiRahsia,
+            indeks: indeks,
+            dariAtas: dariAtas,
+            pemerhati: pemerhatiKeadaan
         )
-        command.execute()
+        arahan.laksanakan()
         
-        if let upper = arcaneSession.selectedFromUpper, let lower = arcaneSession.selectedFromLower {
-            scheduleMatchEvaluation(upper: upper, lower: lower)
+        if let atas = sesiRahsia.dipilihDariAtas, let bawah = sesiRahsia.dipilihDariBawah {
+            jadualkanPenilaianPadanan(atas: atas, bawah: bawah)
         }
         
         return true
     }
     
-    private func scheduleMatchEvaluation(upper: MysticTileEntity, lower: MysticTileEntity) {
-        let delay = ArcaneConfiguration.AnimationDurations.matchDelay
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
-            guard let self = self else { return }
-            self.evaluateMatchAttempt(upper: upper, lower: lower)
+    private func jadualkanPenilaianPadanan(atas: EntitiJubenMistik, bawah: EntitiJubenMistik) {
+        let kelewatan = KonfigurasiRahsia.TempoAnimasi.kelewatanPadanan
+        DispatchQueue.main.asyncAfter(deadline: .now() + kelewatan) { [weak self] in
+            guard let ini = self else { return }
+            ini.nilaiCubaanPadanan(atas: atas, bawah: bawah)
         }
     }
     
-    private func evaluateMatchAttempt(upper: MysticTileEntity, lower: MysticTileEntity) {
-        let isMatch = matchStrategy.evaluate(upper: upper, lower: lower)
-        stateManager.processMatchResult(
-            isMatch: isMatch,
-            upper: upper,
-            lower: lower,
-            session: arcaneSession
+    private func nilaiCubaanPadanan(atas: EntitiJubenMistik, bawah: EntitiJubenMistik) {
+        let adalahPadanan = strategiPadanan.nilai(atas: atas, bawah: bawah)
+        pengurusKeadaan.prosesKeputusanPadanan(
+            padanan: adalahPadanan,
+            atas: atas,
+            bawah: bawah,
+            sesi: sesiRahsia
         )
         
-        if isMatch {
-            stateObserver?.pairWasEliminated()
-            verifyVictoryCondition()
+        if adalahPadanan {
+            pemerhatiKeadaan?.pasanganTelahDihapuskan()
+            sahkanSyaratKemenangan()
         } else {
-            stateObserver?.cardSelectionDidChange()
+            pemerhatiKeadaan?.pemilihanKadBerubah()
         }
     }
     
-    private func verifyVictoryCondition() {
-        if stateManager.checkVictoryCondition(session: arcaneSession) {
-            haltTemporalEngine()
-            stateObserver?.triumphAchieved()
+    private func sahkanSyaratKemenangan() {
+        if pengurusKeadaan.semakSyaratKemenangan(sesi: sesiRahsia) {
+            hentikanEnginTemporal()
+            pemerhatiKeadaan?.kemenangandiperoleh()
         }
     }
     
-    func progressToNextLevel() {
-        arcaneSession.currentLevel += 1
-        commenceNewChallenge()
+    func majuKeArasBerikutnya() {
+        sesiRahsia.arasSemasa += 1
+        mulaCabaranBaru()
     }
     
-    func resetToInitialState() {
-        arcaneSession.currentLevel = 1
-        commenceNewChallenge()
+    func setSemulaKeKeadaanAwal() {
+        sesiRahsia.arasSemasa = 1
+        mulaCabaranBaru()
     }
     
-    func preserveAchievement() {
-        guard arcaneSession.currentLevel > 1 else { return }
-        let chronicle = PinnacleRecord(
-            difficulty: arcaneSession.difficulty,
-            achievedLevel: arcaneSession.currentLevel,
-            timestamp: Date()
+    func peliharaPencapaian() {
+        guard sesiRahsia.arasSemasa > 1 else { return }
+        let sejarah = RekodPuncak(
+            kesukaran: sesiRahsia.kesukaran,
+            arasDicapai: sesiRahsia.arasSemasa,
+            capWaktu: Date()
         )
-        AncientVaultKeeper.shared.savePinnacleRecord(chronicle)
+        PenjagaVault.dikongsi.simpanRekodPuncak(sejarah)
     }
 }

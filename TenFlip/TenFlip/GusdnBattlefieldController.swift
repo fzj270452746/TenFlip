@@ -2,29 +2,29 @@
 
 import UIKit
 
-class GusdnBattlefieldController: UIViewController {
+class PengawalMedanPerangUtama: UIViewController {
     
-    private var viewModel: EtherealGameViewModel
-    private var upperGridOrchestrator: MahjongGridOrchestrator!
-    private var lowerGridOrchestrator: MahjongGridOrchestrator!
-    private let resourceProvider = StandardResourceProvider()
+    private var modelPaparan: ModelPaparanPermainanEteria
+    private var orkestatorGridAtas: OrkestatorGridMahjong!
+    private var orkestatorGridBawah: OrkestatorGridMahjong!
+    private let penyediaSumber = PelaksanaanPenyediaSumberPiawai()
     
-    private lazy var backgroundLayer: UIImageView = {
+    private lazy var lapisanLatar: UIImageView = {
         let iv = UIImageView()
-        iv.image = resourceProvider.obtainBackgroundTexture()
+        iv.image = penyediaSumber.dapatkanTeksturLatarBelakang()
         iv.contentMode = .scaleAspectFill
         iv.translatesAutoresizingMaskIntoConstraints = false
         return iv
     }()
     
-    private lazy var dimmerOverlay: UIView = {
+    private lazy var lapisanKelam: UIView = {
         let v = UIView()
-        v.backgroundColor = ArcaneConfiguration.ColorPalette.overlayUmber
+        v.backgroundColor = KonfigurasiRahsia.PaletWarna.warnaLapisanCoklat
         v.translatesAutoresizingMaskIntoConstraints = false
         return v
     }()
     
-    private lazy var retreatButton: UIButton = {
+    private lazy var butangUndur: UIButton = {
         let btn = UIButton(type: .system)
         btn.setTitle("← Back", for: .normal)
         btn.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
@@ -33,11 +33,11 @@ class GusdnBattlefieldController: UIViewController {
         btn.layer.cornerRadius = 20
         btn.contentEdgeInsets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
         btn.translatesAutoresizingMaskIntoConstraints = false
-        btn.addTarget(self, action: #selector(initiateRetreat), for: .touchUpInside)
+        btn.addTarget(self, action: #selector(mulakanUndur), for: .touchUpInside)
         return btn
     }()
     
-    private lazy var levelBanner: UILabel = {
+    private lazy var panerAras: UILabel = {
         let lbl = UILabel()
         lbl.font = UIFont.systemFont(ofSize: 24, weight: .bold)
         lbl.textColor = .white
@@ -48,7 +48,7 @@ class GusdnBattlefieldController: UIViewController {
         return lbl
     }()
     
-    private lazy var chronometer: UILabel = {
+    private lazy var kronometer: UILabel = {
         let lbl = UILabel()
         lbl.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
         lbl.textColor = .white
@@ -59,50 +59,50 @@ class GusdnBattlefieldController: UIViewController {
         return lbl
     }()
     
-    private lazy var upperCollection: UICollectionView = {
-        let layout = UICollectionViewFlowLayout()
-        layout.minimumInteritemSpacing = ArcaneConfiguration.LayoutMetrics.gridSpacing
-        layout.minimumLineSpacing = ArcaneConfiguration.LayoutMetrics.gridSpacing
-        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
+    private lazy var koleksiAtas: UICollectionView = {
+        let susunAtur = UICollectionViewFlowLayout()
+        susunAtur.minimumInteritemSpacing = KonfigurasiRahsia.MetrikSusunAtur.jarakGrid
+        susunAtur.minimumLineSpacing = KonfigurasiRahsia.MetrikSusunAtur.jarakGrid
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: susunAtur)
         cv.backgroundColor = .clear
         cv.isScrollEnabled = false
         cv.translatesAutoresizingMaskIntoConstraints = false
         return cv
     }()
     
-    private lazy var lowerCollection: UICollectionView = {
-        let layout = UICollectionViewFlowLayout()
-        layout.minimumInteritemSpacing = ArcaneConfiguration.LayoutMetrics.gridSpacing
-        layout.minimumLineSpacing = ArcaneConfiguration.LayoutMetrics.gridSpacing
-        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
+    private lazy var koleksiBawah: UICollectionView = {
+        let susunAtur = UICollectionViewFlowLayout()
+        susunAtur.minimumInteritemSpacing = KonfigurasiRahsia.MetrikSusunAtur.jarakGrid
+        susunAtur.minimumLineSpacing = KonfigurasiRahsia.MetrikSusunAtur.jarakGrid
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: susunAtur)
         cv.backgroundColor = .clear
         cv.isScrollEnabled = false
         cv.translatesAutoresizingMaskIntoConstraints = false
         return cv
     }()
     
-    private lazy var dividerLine: UIView = {
+    private lazy var garisPemisah: UIView = {
         let v = UIView()
         v.backgroundColor = UIColor.white.withAlphaComponent(0.5)
         v.translatesAutoresizingMaskIntoConstraints = false
         return v
     }()
     
-    init(difficulty: ZenithDifficulty) {
-        self.viewModel = EtherealGameViewModel(difficulty: difficulty)
+    init(kesukaran: ArasKesukaran) {
+        self.modelPaparan = ModelPaparanPermainanEteria(kesukaran: kesukaran)
         super.init(nibName: nil, bundle: nil)
     }
     
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        fatalError("init(coder:) belum dilaksanakan")
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        assembleInterface()
-        establishOrchestrators()
-        viewModel.stateObserver = self
-        viewModel.commenceNewChallenge()
+        rakaikanAntaraMuka()
+        tubuhkanOrkestator()
+        modelPaparan.pemerhatiKeadaan = self
+        modelPaparan.mulaCabaranBaru()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -112,209 +112,208 @@ class GusdnBattlefieldController: UIViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        viewModel.haltTemporalEngine()
+        modelPaparan.hentikanEnginTemporal()
         navigationController?.setNavigationBarHidden(false, animated: animated)
     }
     
-    private func assembleInterface() {
-        view.addSubview(backgroundLayer)
-        view.addSubview(dimmerOverlay)
-        view.addSubview(retreatButton)
-        view.addSubview(levelBanner)
-        view.addSubview(chronometer)
-        view.addSubview(upperCollection)
-        view.addSubview(dividerLine)
-        view.addSubview(lowerCollection)
+    private func rakaikanAntaraMuka() {
+        view.addSubview(lapisanLatar)
+        view.addSubview(lapisanKelam)
+        view.addSubview(butangUndur)
+        view.addSubview(panerAras)
+        view.addSubview(kronometer)
+        view.addSubview(koleksiAtas)
+        view.addSubview(garisPemisah)
+        view.addSubview(koleksiBawah)
         
-        let viewWidth = view.bounds.width
-        let viewHeight = view.bounds.height
-        let topSpace: CGFloat = 90
-        let separatorSpace: CGFloat = 8
-        let bottomSpace: CGFloat = 30
-        let availableHeight = viewHeight - topSpace - separatorSpace - bottomSpace
-        let singleGridHeight = availableHeight / 2 - 20
-        let availableWidth = viewWidth - 32
-        let gridSize = min(availableWidth, singleGridHeight)
+        let lebarPaparan = view.bounds.width
+        let tinggiPaparan = view.bounds.height
+        let ruangAtas: CGFloat = 90
+        let ruangPemisah: CGFloat = 8
+        let ruangBawah: CGFloat = 30
+        let tinggiTersedia = tinggiPaparan - ruangAtas - ruangPemisah - ruangBawah
+        let tinggiGridTunggal = tinggiTersedia / 2 - 20
+        let lebarTersedia = lebarPaparan - 32
+        let saizGrid = min(lebarTersedia, tinggiGridTunggal)
         
         NSLayoutConstraint.activate([
-            backgroundLayer.topAnchor.constraint(equalTo: view.topAnchor),
-            backgroundLayer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            backgroundLayer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            backgroundLayer.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            lapisanLatar.topAnchor.constraint(equalTo: view.topAnchor),
+            lapisanLatar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            lapisanLatar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            lapisanLatar.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            dimmerOverlay.topAnchor.constraint(equalTo: view.topAnchor),
-            dimmerOverlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            dimmerOverlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            dimmerOverlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            lapisanKelam.topAnchor.constraint(equalTo: view.topAnchor),
+            lapisanKelam.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            lapisanKelam.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            lapisanKelam.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            retreatButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 5),
-            retreatButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            butangUndur.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 5),
+            butangUndur.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             
-            levelBanner.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 5),
-            levelBanner.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            levelBanner.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            panerAras.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 5),
+            panerAras.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            panerAras.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             
-            chronometer.topAnchor.constraint(equalTo: levelBanner.bottomAnchor, constant: 4),
-            chronometer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            chronometer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            kronometer.topAnchor.constraint(equalTo: panerAras.bottomAnchor, constant: 4),
+            kronometer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            kronometer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             
-            upperCollection.topAnchor.constraint(equalTo: chronometer.bottomAnchor, constant: 8),
-            upperCollection.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            upperCollection.widthAnchor.constraint(equalToConstant: gridSize),
-            upperCollection.heightAnchor.constraint(equalToConstant: gridSize),
+            koleksiAtas.topAnchor.constraint(equalTo: kronometer.bottomAnchor, constant: 8),
+            koleksiAtas.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            koleksiAtas.widthAnchor.constraint(equalToConstant: saizGrid),
+            koleksiAtas.heightAnchor.constraint(equalToConstant: saizGrid),
             
-            dividerLine.topAnchor.constraint(equalTo: upperCollection.bottomAnchor, constant: 4),
-            dividerLine.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
-            dividerLine.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
-            dividerLine.heightAnchor.constraint(equalToConstant: 2),
+            garisPemisah.topAnchor.constraint(equalTo: koleksiAtas.bottomAnchor, constant: 4),
+            garisPemisah.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
+            garisPemisah.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
+            garisPemisah.heightAnchor.constraint(equalToConstant: 2),
             
-            lowerCollection.topAnchor.constraint(equalTo: dividerLine.bottomAnchor, constant: 4),
-            lowerCollection.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            lowerCollection.widthAnchor.constraint(equalToConstant: gridSize),
-            lowerCollection.heightAnchor.constraint(equalToConstant: gridSize)
+            koleksiBawah.topAnchor.constraint(equalTo: garisPemisah.bottomAnchor, constant: 4),
+            koleksiBawah.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            koleksiBawah.widthAnchor.constraint(equalToConstant: saizGrid),
+            koleksiBawah.heightAnchor.constraint(equalToConstant: saizGrid)
         ])
     }
     
-    private func establishOrchestrators() {
-        upperGridOrchestrator = MahjongGridOrchestrator(
-            collectionView: upperCollection,
-            identifier: "upper",
-            isUpperGrid: true,
-            resourceProvider: resourceProvider
+    private func tubuhkanOrkestator() {
+        orkestatorGridAtas = OrkestatorGridMahjong(
+            paparanKoleksi: koleksiAtas,
+            pengecam: "atas",
+            adalahGridAtas: true,
+            penyediaSumber: penyediaSumber
         )
-        upperGridOrchestrator.delegate = self
+        orkestatorGridAtas.delegat = self
         
-        lowerGridOrchestrator = MahjongGridOrchestrator(
-            collectionView: lowerCollection,
-            identifier: "lower",
-            isUpperGrid: false,
-            resourceProvider: resourceProvider
+        orkestatorGridBawah = OrkestatorGridMahjong(
+            paparanKoleksi: koleksiBawah,
+            pengecam: "bawah",
+            adalahGridAtas: false,
+            penyediaSumber: penyediaSumber
         )
-        lowerGridOrchestrator.delegate = self
+        orkestatorGridBawah.delegat = self
     }
     
-    private func synchronizeInterface() {
-        levelBanner.text = "Level \(viewModel.currentLevel)"
-        chronometer.text = "Time: \(viewModel.remainingTime)s"
+    private func sinkronkanAntaraMuka() {
+        panerAras.text = "Level \(modelPaparan.arasSemasa)"
+        kronometer.text = "Time: \(modelPaparan.masaBaki)s"
         
-        upperGridOrchestrator.reconfigureWithEntities(
-            viewModel.upperGridEntities,
-            dimension: viewModel.currentDifficulty.gridDimension
+        orkestatorGridAtas.konfigurasiSemulaDenganEntiti(
+            modelPaparan.entitiGridAtas,
+            dimensi: modelPaparan.kesukaranSemasa.dimensiGrid
         )
         
-        lowerGridOrchestrator.reconfigureWithEntities(
-            viewModel.lowerGridEntities,
-            dimension: viewModel.currentDifficulty.gridDimension
+        orkestatorGridBawah.konfigurasiSemulaDenganEntiti(
+            modelPaparan.entitiGridBawah,
+            dimensi: modelPaparan.kesukaranSemasa.dimensiGrid
         )
     }
     
-    @objc private func initiateRetreat() {
-        viewModel.haltTemporalEngine()
+    @objc private func mulakanUndur() {
+        modelPaparan.hentikanEnginTemporal()
         
-        let portal = LuminousDialogPortal()
-        let actions = [
-            DialogAction(title: "Yes", style: .destructive) { [weak self] in
+        let portal = PortalDialogBercahaya()
+        let tindakanSenarai = [
+            TindakanDialog(tajuk: "Yes", gaya: .musnah) { [weak self] in
                 self?.navigationController?.popViewController(animated: true)
             },
-            DialogAction(title: "No", style: .secondary, handler: nil)
+            TindakanDialog(tajuk: "No", gaya: .sekunder, pengendali: nil)
         ]
-        portal.manifestWithConfiguration(
-            title: "Quit Game",
-            message: "Are you sure you want to quit the game?",
-            actions: actions
+        portal.tampilkanDenganKonfigurasi(
+            tajuk: "Quit Game",
+            mesej: "Are you sure you want to quit the game?",
+            tindakan: tindakanSenarai
         )
     }
     
-    private func presentTriumphDialog() {
-        let portal = LuminousDialogPortal()
-        let actions = [
-            DialogAction(title: "Next Level", style: .primary) { [weak self] in
-                self?.viewModel.progressToNextLevel()
+    private func persembahkanDialogKemenangan() {
+        let portal = PortalDialogBercahaya()
+        let tindakanSenarai = [
+            TindakanDialog(tajuk: "Next Level", gaya: .primer) { [weak self] in
+                self?.modelPaparan.majuKeArasBerikutnya()
             },
-            DialogAction(title: "Quit", style: .secondary) { [weak self] in
-                self?.navigationController?.popViewController(animated: true)
-            }
-        ]
-        portal.manifestWithConfiguration(
-            title: "Level Complete!",
-            message: "Congratulations! You've cleared Level \(viewModel.currentLevel)!",
-            actions: actions
-        )
-    }
-    
-    private func presentFailureDialog() {
-        viewModel.preserveAchievement()
-        
-        let portal = LuminousDialogPortal()
-        let actions = [
-            DialogAction(title: "Try Again", style: .primary) { [weak self] in
-                self?.viewModel.resetToInitialState()
-            },
-            DialogAction(title: "Quit", style: .secondary) { [weak self] in
+            TindakanDialog(tajuk: "Quit", gaya: .sekunder) { [weak self] in
                 self?.navigationController?.popViewController(animated: true)
             }
         ]
+        portal.tampilkanDenganKonfigurasi(
+            tajuk: "Level Complete!",
+            mesej: "Congratulations! You've cleared Level \(modelPaparan.arasSemasa)!",
+            tindakan: tindakanSenarai
+        )
+    }
+    
+    private func persembahkanDialogKekalahan() {
+        modelPaparan.peliharaPencapaian()
         
-        let message = viewModel.currentLevel > 1 ?
-            "You reached Level \(viewModel.currentLevel)!\nYour score has been saved." :
+        let portal = PortalDialogBercahaya()
+        let tindakanSenarai = [
+            TindakanDialog(tajuk: "Try Again", gaya: .primer) { [weak self] in
+                self?.modelPaparan.setSemulaKeKeadaanAwal()
+            },
+            TindakanDialog(tajuk: "Quit", gaya: .sekunder) { [weak self] in
+                self?.navigationController?.popViewController(animated: true)
+            }
+        ]
+        
+        let mesej = modelPaparan.arasSemasa > 1 ?
+            "You reached Level \(modelPaparan.arasSemasa)!\nYour score has been saved." :
             "Time's up! Try again to reach higher levels."
         
-        portal.manifestWithConfiguration(
-            title: "Game Over",
-            message: message,
-            actions: actions
+        portal.tampilkanDenganKonfigurasi(
+            tajuk: "Game Over",
+            mesej: mesej,
+            tindakan: tindakanSenarai
         )
     }
 }
 
-extension GusdnBattlefieldController: EtherealGameStateObserver {
+extension PengawalMedanPerangUtama: PemerhatiKeadaanPermainanEteria {
     
-    func chronicleDidAdvance(to level: Int) {
-        synchronizeInterface()
+    func sejarahTelahMaju(ke aras: Int) {
+        sinkronkanAntaraMuka()
     }
     
-    func temporalFluxUpdated(remaining: Int) {
-        chronometer.text = "Time: \(remaining)s"
+    func fluksMasaDikemaskini(baki: Int) {
+        kronometer.text = "Time: \(baki)s"
         
-        if remaining <= 10 {
-            chronometer.textColor = .red
+        if baki <= 10 {
+            kronometer.textColor = .red
         } else {
-            chronometer.textColor = .white
+            kronometer.textColor = .white
         }
     }
     
-    func cardSelectionDidChange() {
-        upperGridOrchestrator.refreshPresentation()
-        lowerGridOrchestrator.refreshPresentation()
+    func pemilihanKadBerubah() {
+        orkestatorGridAtas.segarkanPersembahan()
+        orkestatorGridBawah.segarkanPersembahan()
     }
     
-    func triumphAchieved() {
-        presentTriumphDialog()
+    func kemenangandiperoleh() {
+        persembahkanDialogKemenangan()
     }
     
-    func catastrophicFailure() {
-        presentFailureDialog()
+    func kegagalanKatastrofik() {
+        persembahkanDialogKekalahan()
     }
     
-    func pairWasEliminated() {
-        chronometer.textColor = ArcaneConfiguration.ColorPalette.successVerdant
+    func pasanganTelahDihapuskan() {
+        kronometer.textColor = KonfigurasiRahsia.PaletWarna.warnaHijauKejayaan
         
-        upperGridOrchestrator.refreshPresentation()
-        lowerGridOrchestrator.refreshPresentation()
+        orkestatorGridAtas.segarkanPersembahan()
+        orkestatorGridBawah.segarkanPersembahan()
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + ArcaneConfiguration.AnimationDurations.colorFlash) { [weak self] in
-            guard let self = self else { return }
-            if self.viewModel.remainingTime > 10 {
-                self.chronometer.textColor = .white
+        DispatchQueue.main.asyncAfter(deadline: .now() + KonfigurasiRahsia.TempoAnimasi.denyutanWarna) { [weak self] in
+            guard let ini = self else { return }
+            if ini.modelPaparan.masaBaki > 10 {
+                ini.kronometer.textColor = .white
             }
         }
     }
 }
 
-extension GusdnBattlefieldController: MahjongGridDelegate {
+extension PengawalMedanPerangUtama: DelegatGridMahjong {
     
-    func gridDidSelectCard(at index: Int, isUpperGrid: Bool) {
-        _ = viewModel.attemptCardSelection(at: index, fromUpper: isUpperGrid)
+    func gridTelahPilihKad(pada indeks: Int, adalahGridAtas: Bool) {
+        _ = modelPaparan.cubakanPemilihanKad(pada: indeks, dariAtas: adalahGridAtas)
     }
 }
-
